@@ -9,15 +9,19 @@
    <top>
       <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <items>
-          <Button mnemonicParsing="false" onAction="#btnTest_clicked" text="Test" />
+          <Button mnemonicParsing="false" onAction="#btnTest_clicked" text="Record" />
         </items>
       </ToolBar>
    </top>
    <center>
-      <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <Canvas fx:id="visCanvas" height="200.0" width="200.0" />
-         </children>
-      </Pane>
+      <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
    </center>
+   <left>
+      <VBox prefHeight="360.0" prefWidth="163.0" BorderPane.alignment="CENTER">
+         <children>
+            <Canvas fx:id="visCanvasChannel1" height="99.0" width="200.0" />
+            <Canvas fx:id="visCanvasChannel2" height="99.0" width="200.0" />
+         </children>
+      </VBox>
+   </left>
 </BorderPane>
