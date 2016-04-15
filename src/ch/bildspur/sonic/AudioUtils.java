@@ -35,6 +35,7 @@ public class AudioUtils {
                         javax.sound.sampled.Line.Info lineInfo = var6[var8];
                         if(TargetDataLine.class.isAssignableFrom(lineInfo.getLineClass())) {
                             sources.add(new Pair(src, lineInfo));
+                            System.out.println(src.getName() + "\t=\t");
                         }
                     }
                 } catch (Throwable var17) {
