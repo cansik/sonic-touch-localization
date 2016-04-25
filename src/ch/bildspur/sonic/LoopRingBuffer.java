@@ -1,0 +1,86 @@
+package ch.bildspur.sonic;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Created by cansik on 18/04/16.
+ */
+public class LoopRingBuffer {
+    private float[] buffer;
+    int pos = 0;
+
+    public LoopRingBuffer(int size)
+    {
+        buffer = new float[size];
+    }
+
+    public void put(float value)
+    {
+        buffer[pos] = value;
+        pos = (pos + 1) % buffer.length;
+    }
+
+    public void put(float[] values)
+    {
+        for(int i = 0; i < values.length; i++)
+        {
+            put(values[i]);
+        }
+    }
+
+    public float get(int index)
+    {
+        return buffer[index];
+    }
+
+    public float[] getBuffer()
+    {
+        return buffer.clone();
+    }
+
+    public int size()
+    {
+        return buffer.length;
+    }
+
+    public void saveBuffer(String fileName)
+    {
+        StringBuilder s = new StringBuilder();
+        float[] b = getBuffer();
+        for(int i = 0; i < pos; i++)
+        {
+            s.append(i);
+            s.append(",");
+            s.append(b[i]);
+            s.append("\n");
+        }
+
+        try {
+            Files.write(Paths.get(fileName), s.toString().getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadBuffer(String fileName)
+    {
+        List<String> input = new ArrayList<String>();
+
+        try {
+            input.addAll(Files.readAllLines(Paths.get(fileName)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // add into buffer
+        for(String s : input)
+        {
+            float f = Float.parseFloat(s.split(",")[1]);
+            put(f);
+        }
+    }
+}
