@@ -1,9 +1,6 @@
 package main;
 
-import ch.bildspur.sonic.AudioUtils;
-import ch.bildspur.sonic.GestureRecognizer;
-import ch.bildspur.sonic.LaneRecorder;
-import ch.bildspur.sonic.LoopRingBuffer;
+import ch.bildspur.sonic.*;
 import ch.fhnw.ether.audio.JavaSoundSource;
 import ch.fhnw.ether.audio.fx.AudioGain;
 import javafx.application.Platform;
@@ -14,9 +11,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class Controller implements IBufferReceiver {
 
@@ -31,6 +26,8 @@ public class Controller implements IBufferReceiver {
 
     @FXML
     public Canvas visCanvasChannel4;
+
+    GestureRecognizer gr;
 
     public void btnTest_clicked(ActionEvent actionEvent) {
         System.out.println("draw visualisation");
@@ -48,7 +45,8 @@ public class Controller implements IBufferReceiver {
         source = new JavaSoundSource(2, 48000, 256*2);
 
         LaneRecorder recorder = new LaneRecorder(source, new AudioGain());
-        recorder.getProgram().addLast(new GestureRecognizer(this));
+        gr = new GestureRecognizer(this);
+        recorder.getProgram().addLast(gr);
 
         SwingUtilities.invokeLater(recorder::start);
     }
@@ -93,10 +91,12 @@ public class Controller implements IBufferReceiver {
         Platform.runLater(() -> drawBuffer(20, 50, c2, visCanvasChannel2));
 
 
+        /*
         float[] c3 = Arrays.copyOf(channels[2], channels[2].length);
         float[] c4 = Arrays.copyOf(channels[3], channels[3].length);
         Platform.runLater(() -> drawBuffer(20, 50, c3, visCanvasChannel3));
         Platform.runLater(() -> drawBuffer(20, 50, c4, visCanvasChannel4));
+        */
 
     }
 
@@ -104,25 +104,40 @@ public class Controller implements IBufferReceiver {
         LoopRingBuffer lrb1 = new LoopRingBuffer(50000);
         LoopRingBuffer lrb2 = new LoopRingBuffer(50000);
 
-        lrb1.loadBuffer("plot1.data");
-        lrb2.loadBuffer("plot2.data");
+        lrb1.loadBuffer("data/plot1.data");
+        lrb2.loadBuffer("data/plot2.data");
 
         float[] f = lrb1.getBuffer();
+        float[] g = lrb2.getBuffer();
 
-        List<Integer> ext = new ArrayList<Integer>();
-        for (int i = 0; i<f.length-2; i++) {
-            if ((f[i+1]-f[i])*(f[i+2]-f[i+1]) <= 0) { // changed sign?
-                ext.add(i+1);
+        Anaylizer a = new Anaylizer();
+        float[] cross = a.crossCorrelation(f, g);
+
+        cross = new float[f.length];
+        for(int i = 0; i < cross.length; i++)
+        {
+            cross[i] = a.crossCorrelationBourke(f, g, i, 100);
+        }
+
+        LoopRingBuffer lrbC = new LoopRingBuffer(cross.length + 1);
+        lrbC.put(cross);
+        lrbC.saveBuffer("data/cross.data");
+
+        System.out.println("finished!");
+
+        /*
+        float[] cross = new float[f.length];
+
+        for(int n = 0; n < cross.length; n++) {
+            for (int m = 0; m < f.length; m++) {
+                cross[n] = f[m] * g[m+n];
             }
         }
+        */
 
-        for(int i : ext)
-        {
-            System.out.println(i + ": " + f[i]);
-        }
     }
 
     public void btnSave_clicked(ActionEvent actionEvent) {
-
+        gr.saveAllBuffer();
     }
 }

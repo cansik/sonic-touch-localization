@@ -30,6 +30,14 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
 
     int k = 0;
 
+    public void saveAllBuffer()
+    {
+        buffer.saveBuffer("data/plot1.data");
+        buffer2.saveBuffer("data/plot2.data");
+
+        System.out.println("buffer saved!");
+    }
+
     @Override
     protected void run(IAudioRenderTarget target) throws RenderCommandException {
         AudioFrame frame = target.getFrame();
@@ -54,7 +62,7 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
             //buffer.saveBuffer("plot1.data");
             //buffer2.saveBuffer("plot2.data");
 
-            System.out.println("buffer saved!");
+            //System.out.println("buffer saved!");
         }
 
         // just some buffer test
