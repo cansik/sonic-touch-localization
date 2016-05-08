@@ -13,6 +13,8 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
 
     IGestureHandler receiver;
 
+    float threshold = 0.5f;
+
     int k = 0;
 
     public GestureRecognizer()
@@ -24,6 +26,14 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
     {
         this();
         this.receiver = receiver;
+    }
+
+    public float getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(float threshold) {
+        this.threshold = threshold;
     }
 
     @Override
@@ -42,7 +52,7 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
             }
         }
 
-        checkThreshold(channels, 0.5f);
+        checkThreshold(channels, threshold);
 
         receiver.bufferReceived(channels);
 
@@ -51,6 +61,15 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
 
     private void checkThreshold(float[][] channels, float threshold)
     {
-
+        for(int c = 0; c < channels.length; c++)
+        {
+            for(int i = 0; i < channels[c].length; i++)
+            {
+                if(Math.abs(channels[c][i]) > threshold)
+                {
+                    receiver.thresholdPassed();
+                }
+            }
+        }
     }
 }

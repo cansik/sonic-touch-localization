@@ -4,11 +4,15 @@ import ch.bildspur.sonic.*;
 import ch.fhnw.ether.audio.JavaSoundSource;
 import ch.fhnw.ether.audio.fx.AudioGain;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -33,12 +37,26 @@ public class Controller implements IGestureHandler {
     @FXML
     public Canvas visBufferRight;
 
+    public Circle circleThresholdPassed;
+    public Slider sliderThreshold;
+
     GestureRecognizer gr;
 
     int bufferSize = 10000;
 
     LoopRingBuffer bufferLeft = new LoopRingBuffer(bufferSize);
     LoopRingBuffer bufferRight = new LoopRingBuffer(bufferSize);
+
+    boolean thresholdPassed = false;
+    int thresholdWait = 10;
+    int thresholdTimer = 0;
+
+    public void initialize()
+    {
+        sliderThreshold.valueProperty().addListener((observable, oldValue, newValue) -> {
+            gr.setThreshold(newValue.floatValue());
+        });
+    }
 
     public void btnTest_clicked(ActionEvent actionEvent) {
         System.out.println("draw visualisation");
@@ -59,32 +77,25 @@ public class Controller implements IGestureHandler {
         gr = new GestureRecognizer(this);
         recorder.getProgram().addLast(gr);
 
+        sliderThreshold.setValue(gr.getThreshold());
+
         SwingUtilities.invokeLater(recorder::start);
     }
 
-    void drawTableVisualisation() {
-        GraphicsContext gc = visCanvasChannel1.getGraphicsContext2D();
-
-        gc.setFill(Color.BLUE);
-        gc.rect(10, 10, 200, 100);
-
-        gc.setFill(Color.GREEN);
-        gc.fill();
-    }
-
-    void drawBuffer(float[] buffer, Canvas c, Color color)
+    void drawBuffer(float[] buffer, Canvas c, Color color, boolean drawThreshold)
     {
         GraphicsContext gc = c.getGraphicsContext2D();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         float space = (float)(c.getWidth() / buffer.length);
 
+        gc.setStroke(Color.BLACK);
         gc.setFill(color);
 
         gc.strokeRect(1, 1, c.getWidth() - 2, c.getHeight() - 2);
 
         float y = (float)c.getHeight() / 2f;
 
-        float postAmp = 200; //100000;
+        float postAmp = 20; //100000;
 
         for(int i = 0; i < buffer.length - 1; i++)
         {
@@ -92,11 +103,12 @@ public class Controller implements IGestureHandler {
 
             gc.fillOval(space * i, y + v * postAmp, 3, 3);
         }
-    }
 
-    void drawBuffer(float[] buffer, Canvas c)
-    {
-        drawBuffer(buffer, c, Color.BLUE);
+        // draw threshold
+        gc.setStroke(Color.GREEN);
+        if(drawThreshold) {
+            gc.strokeLine(0, y + y * gr.getThreshold() * -1, c.getWidth(), y + y * gr.getThreshold() * -1);
+        }
     }
 
     @Override
@@ -108,13 +120,24 @@ public class Controller implements IGestureHandler {
         bufferLeft.put(c1);
         bufferRight.put(c2);
 
-        Platform.runLater(() -> drawBuffer(c1, visCanvasChannel1, Color.BLUE));
-        Platform.runLater(() -> drawBuffer(c2, visCanvasChannel2, Color.RED));
+        Platform.runLater(() -> drawBuffer(c1, visCanvasChannel1, Color.BLUE, false));
+        Platform.runLater(() -> drawBuffer(c2, visCanvasChannel2, Color.RED, false));
 
         // draw full buffer
-        Platform.runLater(() -> drawBuffer(bufferLeft.getBuffer(), visBufferLeft, Color.BLUE));
-        Platform.runLater(() -> drawBuffer(bufferRight.getBuffer(), visBufferRight, Color.RED));
+        Platform.runLater(() -> drawBuffer(bufferLeft.getBuffer(), visBufferLeft, Color.BLUE, true));
+        Platform.runLater(() -> drawBuffer(bufferRight.getBuffer(), visBufferRight, Color.RED, true));
 
+
+        //threshold
+        if(thresholdPassed)
+        {
+            if(thresholdTimer > thresholdWait)
+            {
+                circleThresholdPassed.setFill(Color.WHITE);
+                thresholdPassed = false;
+            }
+            thresholdTimer++;
+        }
 
         /*
         float[] c3 = Arrays.copyOf(channels[2], channels[2].length);
@@ -123,6 +146,13 @@ public class Controller implements IGestureHandler {
         Platform.runLater(() -> drawBuffer(20, 50, c4, visCanvasChannel4));
         */
 
+    }
+
+    @Override
+    public void thresholdPassed() {
+        thresholdTimer = 0;
+        thresholdPassed = true;
+        circleThresholdPassed.setFill(Color.RED);
     }
 
     public void btnDetect_clicked(ActionEvent actionEvent) {

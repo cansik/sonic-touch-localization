@@ -6,5 +6,5 @@ package main;
 public interface IGestureHandler {
     void bufferReceived(float[][] channels);
 
-    //void thresholdPassed();
+    void thresholdPassed();
 }
