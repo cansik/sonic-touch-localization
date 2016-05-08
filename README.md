@@ -8,5 +8,8 @@ A basic interaction is the tapping of interface elements with your finger. On a 
 ![Experiment Setup](images/experiment_setup.png)
 *Experiment Setup*
 
+## UI
+![UI](images/ui.png)
+
 ## About
 *Developed by Florian Bruggisser 2016*
