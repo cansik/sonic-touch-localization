@@ -61,7 +61,7 @@ public class LoopRingBuffer {
         for (int i = 0; i < length; i++)
         {
             int p = (buffer.length + pos - i) % buffer.length;
-            result[i] = buffer[p];
+            result[result.length-1-i] = buffer[p];
         }
 
         return result;

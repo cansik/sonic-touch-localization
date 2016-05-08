@@ -39,6 +39,8 @@ public class Controller implements IGestureHandler {
 
     public Circle circleThresholdPassed;
     public Slider sliderThreshold;
+    public Canvas visAnalyzing;
+    public Canvas visAnalyzingRight;
 
     GestureRecognizer gr;
 
@@ -48,7 +50,7 @@ public class Controller implements IGestureHandler {
     LoopRingBuffer bufferRight = new LoopRingBuffer(bufferSize);
 
     boolean thresholdPassed = false;
-    int thresholdWait = 10;
+    int thresholdWait = 5;
     int thresholdTimer = 0;
 
     public void initialize()
@@ -153,9 +155,12 @@ public class Controller implements IGestureHandler {
 
     private void doAnalyze()
     {
-        int sampleSize = 300;
+        int sampleSize = 2000;
         float[] f = bufferLeft.getLatest(sampleSize);
         float[] g = bufferRight.getLatest(sampleSize);
+
+        Platform.runLater(() -> drawBuffer(f, visAnalyzing, Color.CYAN, true));
+        Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true));
 
         Anaylizer a = new Anaylizer();
         float corr = a.execCorrelation(f, g);

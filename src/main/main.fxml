@@ -29,6 +29,8 @@
             <Circle fx:id="circleThresholdPassed" fill="WHITE" layoutX="148.0" layoutY="219.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
             <Label layoutX="14.0" layoutY="212.0" text="Threshold Passed:" />
             <Slider fx:id="sliderThreshold" blockIncrement="0.1" layoutX="188.0" layoutY="213.0" majorTickUnit="0.1" max="1.0" prefHeight="15.0" prefWidth="198.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
+            <Canvas fx:id="visAnalyzing" height="71.0" layoutY="258.0" width="400.0" />
+            <Canvas fx:id="visAnalyzingRight" height="71.0" layoutY="329.0" width="400.0" />
          </children></Pane>
    </center>
    <left>
