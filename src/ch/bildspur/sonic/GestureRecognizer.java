@@ -4,38 +4,26 @@ import ch.fhnw.ether.audio.AudioFrame;
 import ch.fhnw.ether.audio.IAudioRenderTarget;
 import ch.fhnw.ether.media.AbstractRenderCommand;
 import ch.fhnw.ether.media.RenderCommandException;
-import main.IBufferReceiver;
+import main.IGestureHandler;
 
 /**
  * Created by cansik on 10/04/16.
  */
 public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget> {
 
+    IGestureHandler receiver;
 
-    IBufferReceiver receiver;
-
-    LoopRingBuffer buffer = new LoopRingBuffer(50000);
-    LoopRingBuffer buffer2 = new LoopRingBuffer(50000);
+    int k = 0;
 
     public GestureRecognizer()
     {
         super();
     }
 
-    public GestureRecognizer(IBufferReceiver receiver)
+    public GestureRecognizer(IGestureHandler receiver)
     {
         this();
         this.receiver = receiver;
-    }
-
-    int k = 0;
-
-    public void saveAllBuffer()
-    {
-        buffer.saveBuffer("data/plot1.data");
-        buffer2.saveBuffer("data/plot2.data");
-
-        System.out.println("buffer saved!");
     }
 
     @Override
@@ -54,21 +42,15 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
             }
         }
 
-        k += bufferSize;
-
-        if(k > 50000)
-        {
-            k = 0;
-            //buffer.saveBuffer("plot1.data");
-            //buffer2.saveBuffer("plot2.data");
-
-            //System.out.println("buffer saved!");
-        }
-
-        // just some buffer test
-        buffer.put(channels[0]);
-        buffer2.put(channels[1]);
+        checkThreshold(channels, 0.5f);
 
         receiver.bufferReceived(channels);
+
+        k += bufferSize;
+    }
+
+    private void checkThreshold(float[][] channels, float threshold)
+    {
+
     }
 }

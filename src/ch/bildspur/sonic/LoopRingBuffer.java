@@ -47,6 +47,26 @@ public class LoopRingBuffer {
         return buffer.length;
     }
 
+
+    /***
+     * Returns latest endpoints
+     * @param length
+     * @return
+     */
+    public float[] getLatest(int length) {
+        assert  (length < size());
+
+        float[] result = new float[length];
+
+        for (int i = 0; i < length; i++)
+        {
+            int p = (pos - i) % size();
+            result[i] = buffer[p];
+        }
+
+        return result;
+    }
+
     public void saveBuffer(String fileName)
     {
         StringBuilder s = new StringBuilder();

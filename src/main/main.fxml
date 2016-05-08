@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
@@ -16,15 +17,23 @@
       </ToolBar>
    </top>
    <center>
-      <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+      <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox prefHeight="200.0" prefWidth="400.0">
+               <children>
+                  <Canvas fx:id="visBufferLeft" height="70.0" width="400.0" />
+                  <Canvas fx:id="visBufferRight" height="70.0" width="400.0" />
+               </children>
+            </VBox>
+         </children></Pane>
    </center>
    <left>
       <VBox prefHeight="360.0" prefWidth="163.0" BorderPane.alignment="CENTER">
          <children>
-            <Canvas fx:id="visCanvasChannel1" height="99.0" width="200.0" />
-            <Canvas fx:id="visCanvasChannel2" height="99.0" width="200.0" />
-            <Canvas fx:id="visCanvasChannel3" height="99.0" width="200.0" />
-            <Canvas fx:id="visCanvasChannel4" height="99.0" width="200.0" />
+            <Canvas fx:id="visCanvasChannel1" height="70.0" width="200.0" />
+            <Canvas fx:id="visCanvasChannel2" height="70.0" width="200.0" />
+            <Canvas fx:id="visCanvasChannel3" height="70.0" width="200.0" />
+            <Canvas fx:id="visCanvasChannel4" height="70.0" width="200.0" />
          </children>
       </VBox>
    </left>

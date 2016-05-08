@@ -13,7 +13,7 @@ import javafx.scene.paint.Color;
 import javax.swing.*;
 import java.util.Arrays;
 
-public class Controller implements IBufferReceiver {
+public class Controller implements IGestureHandler {
 
     @FXML
     public Canvas visCanvasChannel1;
@@ -27,7 +27,18 @@ public class Controller implements IBufferReceiver {
     @FXML
     public Canvas visCanvasChannel4;
 
+    @FXML
+    public Canvas visBufferLeft;
+
+    @FXML
+    public Canvas visBufferRight;
+
     GestureRecognizer gr;
+
+    int bufferSize = 10000;
+
+    LoopRingBuffer bufferLeft = new LoopRingBuffer(bufferSize);
+    LoopRingBuffer bufferRight = new LoopRingBuffer(bufferSize);
 
     public void btnTest_clicked(ActionEvent actionEvent) {
         System.out.println("draw visualisation");
@@ -61,25 +72,31 @@ public class Controller implements IBufferReceiver {
         gc.fill();
     }
 
-    void drawBuffer(float x, float y, float[] buffer, Canvas c)
+    void drawBuffer(float[] buffer, Canvas c, Color color)
     {
         GraphicsContext gc = c.getGraphicsContext2D();
-        gc.clearRect(0, 0, 300, 200);
-        float space = 5;
+        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+        float space = (float)(c.getWidth() / buffer.length);
 
-        gc.setFill(Color.BLUE);
+        gc.setFill(color);
 
-        gc.strokeRect(x, y - 20, space * (buffer.length - 1), 50);
+        gc.strokeRect(1, 1, c.getWidth() - 2, c.getHeight() - 2);
 
-        float postAmp = 100000;
+        float y = (float)c.getHeight() / 2f;
+
+        float postAmp = 200; //100000;
 
         for(int i = 0; i < buffer.length - 1; i++)
         {
             float v = buffer[i];
 
-            gc.fillOval(x + space * i, y + v * postAmp, 5, 5);
+            gc.fillOval(space * i, y + v * postAmp, 3, 3);
         }
+    }
 
+    void drawBuffer(float[] buffer, Canvas c)
+    {
+        drawBuffer(buffer, c, Color.BLUE);
     }
 
     @Override
@@ -87,8 +104,16 @@ public class Controller implements IBufferReceiver {
         float[] c1 = Arrays.copyOf(channels[0], channels[0].length);
         float[] c2 = Arrays.copyOf(channels[1], channels[1].length);
 
-        Platform.runLater(() -> drawBuffer(20, 50, c1, visCanvasChannel1));
-        Platform.runLater(() -> drawBuffer(20, 50, c2, visCanvasChannel2));
+        // just some buffer test
+        bufferLeft.put(c1);
+        bufferRight.put(c2);
+
+        Platform.runLater(() -> drawBuffer(c1, visCanvasChannel1, Color.BLUE));
+        Platform.runLater(() -> drawBuffer(c2, visCanvasChannel2, Color.RED));
+
+        // draw full buffer
+        Platform.runLater(() -> drawBuffer(bufferLeft.getBuffer(), visBufferLeft, Color.BLUE));
+        Platform.runLater(() -> drawBuffer(bufferRight.getBuffer(), visBufferRight, Color.RED));
 
 
         /*
@@ -141,7 +166,15 @@ public class Controller implements IBufferReceiver {
 
     }
 
+    public void saveAllBuffer()
+    {
+        bufferLeft.saveBuffer("data/plot1.data");
+        bufferRight.saveBuffer("data/plot2.data");
+
+        System.out.println("buffer saved!");
+    }
+
     public void btnSave_clicked(ActionEvent actionEvent) {
-        gr.saveAllBuffer();
+        saveAllBuffer();
     }
 }
