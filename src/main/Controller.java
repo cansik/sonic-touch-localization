@@ -135,6 +135,9 @@ public class Controller implements IGestureHandler {
             {
                 circleThresholdPassed.setFill(Color.WHITE);
                 thresholdPassed = false;
+
+                // do analyzing
+                doAnalyze();
             }
             thresholdTimer++;
         }
@@ -146,6 +149,27 @@ public class Controller implements IGestureHandler {
         Platform.runLater(() -> drawBuffer(20, 50, c4, visCanvasChannel4));
         */
 
+    }
+
+    private void doAnalyze()
+    {
+        int sampleSize = 300;
+        float[] f = bufferLeft.getLatest(sampleSize);
+        float[] g = bufferRight.getLatest(sampleSize);
+
+        Anaylizer a = new Anaylizer();
+        float corr = a.execCorrelation(f, g);
+
+        System.out.print("Corss: " + corr);
+
+        if(corr > 0)
+        {
+            System.out.println("\tLEFT");
+        }
+        else
+        {
+            System.out.println("\tRIGHT");
+        }
     }
 
     @Override
