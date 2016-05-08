@@ -113,11 +113,15 @@ public class Controller implements IBufferReceiver {
         Anaylizer a = new Anaylizer();
         float[] cross = a.crossCorrelation(f, g);
 
+        float corr = a.execCorrelation(f, g);
+
+        /*
         cross = new float[f.length];
         for(int i = 0; i < cross.length; i++)
         {
             cross[i] = a.crossCorrelationBourke(f, g, i, 100);
         }
+        */
 
         LoopRingBuffer lrbC = new LoopRingBuffer(cross.length + 1);
         lrbC.put(cross);
