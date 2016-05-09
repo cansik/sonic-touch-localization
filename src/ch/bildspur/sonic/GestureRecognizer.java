@@ -15,6 +15,8 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
 
     float threshold = 0.5f;
 
+    float[] levels;
+
     int k = 0;
 
     public GestureRecognizer()
@@ -39,7 +41,7 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
     @Override
     protected void run(IAudioRenderTarget target) throws RenderCommandException {
         AudioFrame frame = target.getFrame();
-        float[] samples = frame.getMonoSamples();
+        float[] samples = frame.samples;
 
         // split samples into channels
         int bufferSize = samples.length / frame.nChannels;

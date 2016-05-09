@@ -45,14 +45,15 @@ public class Controller implements IGestureHandler {
 
     GestureRecognizer gr;
 
-    int bufferSize = 10000;
+    int bufferSize = 24000;
+    int sampleSize = 4000;
 
     LoopRingBuffer bufferLeft = new LoopRingBuffer(bufferSize);
     LoopRingBuffer bufferRight = new LoopRingBuffer(bufferSize);
     LoopRingBuffer buffer3 = new LoopRingBuffer(bufferSize);
 
     boolean thresholdPassed = false;
-    int thresholdWait = 5;
+    int thresholdWait = 10;
     int thresholdTimer = 0;
 
     float amp = 0;
@@ -81,7 +82,7 @@ public class Controller implements IGestureHandler {
         //source = new JavaSoundSource(8, 96000, 64);
 
         // 2 channel
-        source = new JavaSoundSource(2, 96000, 256*2);
+        source = new JavaSoundSource(2, 44100, 256*2);
 
         LaneRecorder recorder = new LaneRecorder(source, new AudioGain());
         gr = new GestureRecognizer(this);
@@ -165,7 +166,6 @@ public class Controller implements IGestureHandler {
 
     private void doAnalyze()
     {
-        int sampleSize = 2000;
         float[] f = bufferLeft.getLatest(sampleSize);
         float[] g = bufferRight.getLatest(sampleSize);
 
@@ -173,7 +173,7 @@ public class Controller implements IGestureHandler {
         Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true));
 
         Anaylizer a = new Anaylizer();
-        float corr = a.execCorrelation(g, f);
+        float corr = a.execCorrelation(f, g);
 
         System.out.print("Corss: " + corr);
 
@@ -181,9 +181,13 @@ public class Controller implements IGestureHandler {
         {
             System.out.println("\tLEFT");
         }
-        else
+        else if(corr < 0)
         {
             System.out.println("\tRIGHT");
+        }
+        else
+        {
+            System.out.println("\tCenter");
         }
     }
 
