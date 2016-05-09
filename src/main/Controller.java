@@ -41,6 +41,7 @@ public class Controller implements IGestureHandler {
     public Slider sliderThreshold;
     public Canvas visAnalyzing;
     public Canvas visAnalyzingRight;
+    public Slider sliderAmp;
 
     GestureRecognizer gr;
 
@@ -48,15 +49,22 @@ public class Controller implements IGestureHandler {
 
     LoopRingBuffer bufferLeft = new LoopRingBuffer(bufferSize);
     LoopRingBuffer bufferRight = new LoopRingBuffer(bufferSize);
+    LoopRingBuffer buffer3 = new LoopRingBuffer(bufferSize);
 
     boolean thresholdPassed = false;
     int thresholdWait = 5;
     int thresholdTimer = 0;
 
+    float amp = 0;
+
     public void initialize()
     {
         sliderThreshold.valueProperty().addListener((observable, oldValue, newValue) -> {
             gr.setThreshold(newValue.floatValue());
+        });
+
+        sliderAmp.valueProperty().addListener((observable, oldValue, newValue) -> {
+            amp = newValue.floatValue();
         });
     }
 
@@ -70,10 +78,10 @@ public class Controller implements IGestureHandler {
         JavaSoundSource source;
 
         // 8 channel
-        //source = new JavaSoundSource(8, 96000, 256*8);
+        //source = new JavaSoundSource(8, 96000, 64);
 
         // 2 channel
-        source = new JavaSoundSource(2, 48000, 256*2);
+        source = new JavaSoundSource(2, 96000, 256*2);
 
         LaneRecorder recorder = new LaneRecorder(source, new AudioGain());
         gr = new GestureRecognizer(this);
@@ -97,7 +105,7 @@ public class Controller implements IGestureHandler {
 
         float y = (float)c.getHeight() / 2f;
 
-        float postAmp = 20; //100000;
+        float postAmp = amp; //100000;
 
         for(int i = 0; i < buffer.length - 1; i++)
         {
@@ -144,13 +152,15 @@ public class Controller implements IGestureHandler {
             thresholdTimer++;
         }
 
-        /*
+/*
         float[] c3 = Arrays.copyOf(channels[2], channels[2].length);
         float[] c4 = Arrays.copyOf(channels[3], channels[3].length);
-        Platform.runLater(() -> drawBuffer(20, 50, c3, visCanvasChannel3));
-        Platform.runLater(() -> drawBuffer(20, 50, c4, visCanvasChannel4));
-        */
+        Platform.runLater(() -> drawBuffer(c3, visCanvasChannel3, Color.GREEN, false));
+        Platform.runLater(() -> drawBuffer(c4, visCanvasChannel4, Color.YELLOW, false));
+        buffer3.put(c3);
 
+        Platform.runLater(() -> drawBuffer(buffer3.getBuffer(), visBufferRight, Color.GREEN, true));
+*/
     }
 
     private void doAnalyze()
@@ -163,7 +173,7 @@ public class Controller implements IGestureHandler {
         Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true));
 
         Anaylizer a = new Anaylizer();
-        float corr = a.execCorrelation(f, g);
+        float corr = a.execCorrelation(g, f);
 
         System.out.print("Corss: " + corr);
 

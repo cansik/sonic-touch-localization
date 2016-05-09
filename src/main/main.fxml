@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.effect.*?>
 <?import java.lang.*?>
@@ -7,34 +8,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="440.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
-   <top>
-      <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+<AnchorPane prefHeight="612.0" prefWidth="756.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
+   <children>
+      <ToolBar prefHeight="40.0" prefWidth="748.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
           <Button mnemonicParsing="false" onAction="#btnTest_clicked" text="Record" />
             <Button mnemonicParsing="false" onAction="#btnSave_clicked" text="Save" />
             <Button mnemonicParsing="false" onAction="#btnDetect_clicked" text="Detect" />
         </items>
       </ToolBar>
-   </top>
-   <center>
-      <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <VBox prefHeight="200.0" prefWidth="400.0">
-               <children>
-                  <Canvas fx:id="visBufferLeft" height="70.0" width="400.0" />
-                  <Canvas fx:id="visBufferRight" height="70.0" width="400.0" />
-               </children>
-            </VBox>
-            <Circle fx:id="circleThresholdPassed" fill="WHITE" layoutX="148.0" layoutY="219.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" />
-            <Label layoutX="14.0" layoutY="212.0" text="Threshold Passed:" />
-            <Slider fx:id="sliderThreshold" blockIncrement="0.1" layoutX="188.0" layoutY="213.0" majorTickUnit="0.1" max="1.0" prefHeight="15.0" prefWidth="198.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" />
-            <Canvas fx:id="visAnalyzing" height="71.0" layoutY="258.0" width="400.0" />
-            <Canvas fx:id="visAnalyzingRight" height="71.0" layoutY="329.0" width="400.0" />
-         </children></Pane>
-   </center>
-   <left>
-      <VBox prefHeight="360.0" prefWidth="163.0" BorderPane.alignment="CENTER">
+      <VBox layoutY="39.0" prefHeight="572.0" prefWidth="201.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0">
          <children>
             <Canvas fx:id="visCanvasChannel1" height="70.0" width="200.0" />
             <Canvas fx:id="visCanvasChannel2" height="70.0" width="200.0" />
@@ -42,5 +25,17 @@
             <Canvas fx:id="visCanvasChannel4" height="70.0" width="200.0" />
          </children>
       </VBox>
-   </left>
-</BorderPane>
+      <AnchorPane layoutX="201.0" layoutY="40.0" prefHeight="400.0" prefWidth="555.0" AnchorPane.leftAnchor="201.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+         <children>
+            <Circle fx:id="circleThresholdPassed" fill="WHITE" layoutX="155.0" layoutY="163.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" AnchorPane.leftAnchor="143.0" AnchorPane.topAnchor="151.0" />
+            <Slider fx:id="sliderThreshold" blockIncrement="0.1" layoutX="192.0" layoutY="155.0" majorTickUnit="0.1" max="1.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" AnchorPane.leftAnchor="192.0" AnchorPane.rightAnchor="17.0" AnchorPane.topAnchor="155.0" />
+            <Label layoutX="18.0" layoutY="154.0" text="Threshold Passed:" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="154.0" />
+            <Canvas fx:id="visAnalyzingRight" height="71.0" layoutY="262.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+            <Canvas fx:id="visAnalyzing" height="71.0" layoutY="191.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="191.0" />
+            <Canvas fx:id="visBufferLeft" height="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <Canvas fx:id="visBufferRight" height="70.0" layoutY="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0" />
+         </children>
+      </AnchorPane>
+      <Slider fx:id="sliderAmp" blockIncrement="100.0" layoutX="227.0" layoutY="471.0" majorTickUnit="100.0" max="20000.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" />
+   </children>
+</AnchorPane>
