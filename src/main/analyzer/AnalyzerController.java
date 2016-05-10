@@ -1,5 +1,6 @@
 package main.analyzer;
 
+import ch.bildspur.sonic.Anaylizer;
 import ch.bildspur.sonic.LoopRingBuffer;
 import ch.fhnw.ether.audio.IAudioRenderTarget;
 import ch.fhnw.ether.audio.JavaSoundTarget;
@@ -47,7 +48,55 @@ public class AnalyzerController {
         float[] f = bufferLL.getBuffer();
         float[] g = bufferLU.getBuffer();
         float[] h = bufferRU.getBuffer();
-        float[] j = bufferRL.getBuffer();
+        float[] k = bufferRL.getBuffer();
+
+        // prepare params
+        float sonicSpeed = 343.2f; // m/s
+        float samplingRate = 44100; // hz
+        float tableLength = 2; // m
+        float threshold = 0.5f;
+
+        // calculate path percentage
+        double leftPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, f, g);
+        double rightPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, k, h);
+        double topPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, g, h);
+        double bottomPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, f, k);
+
+        // draw result
+        GraphicsContext gc = visTable.getGraphicsContext2D();
+        gc.clearRect(0, 0, visTable.getWidth(), visTable.getHeight());
+
+        // draw lines
+        double width = visTable.getWidth();
+        double height = visTable.getHeight();
+
+        double size = 10;
+        double hs = size / 2;
+
+        // left + top
+        gc.setStroke(Color.BLUE);
+        gc.strokeOval(width * topPer - hs, height * leftPer - hs, size, size);
+
+        // left + bottom
+        gc.setStroke(Color.RED);
+        gc.strokeOval(width * bottomPer - hs, height * leftPer - hs, size, size);
+
+        // right + top
+        gc.setStroke(Color.CYAN);
+        gc.strokeOval(width * topPer - hs, height * rightPer - hs, size, size);
+
+        // right + bottom
+        gc.setStroke(Color.MAGENTA);
+        gc.strokeOval(width * bottomPer - hs, height * rightPer - hs, size, size);
+
+        // draw grid
+        gc.setStroke(Color.DARKGRAY);
+        gc.strokeLine(width / 2, 0, width / 2, height);
+        gc.strokeLine(0, height / 2, width, height / 2);
+
+        // draw border
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(1, 1, width - 2, height - 2);
     }
 
     public void btnLoad_Clicked(ActionEvent actionEvent) {
@@ -59,6 +108,16 @@ public class AnalyzerController {
         }else{
             loadData(selectedDirectory);
         }
+    }
+
+    double getPercentagePosition(float sonicSpeed, float samplingRate, float tableLength, float threshold, float[] f, float[] g)
+    {
+        Anaylizer a = new Anaylizer();
+        double delta = a.extendedThresholdAnalyzer(f, g, threshold);
+        double fullTime = 1/sonicSpeed*tableLength;
+        double samplesForDistance = fullTime * samplingRate;
+        double sampleWay = (samplesForDistance / 2) + delta;
+        return (sampleWay / samplesForDistance);
     }
 
     void updateProgress(double value)
@@ -90,6 +149,20 @@ public class AnalyzerController {
             if(file.getName().equals("RL.wav"))
                 bufferRL = loadWave(file);
         }
+
+        // set mimium length of all
+        int min = Integer.MAX_VALUE;
+
+        if(min > bufferLL.size()) min = bufferLL.size();
+        if(min > bufferLU.size()) min = bufferLU.size();
+        if(min > bufferRU.size()) min = bufferRU.size();
+        if(min > bufferRL.size()) min = bufferRL.size();
+
+        // resize arrays
+        bufferLL = new LoopRingBuffer(bufferLL, min);
+        bufferLU = new LoopRingBuffer(bufferLU, min);
+        bufferRU = new LoopRingBuffer(bufferRU, min);
+        bufferRL = new LoopRingBuffer(bufferRL, min);
 
         //calculate size factor for normalisation
         float max = 0;

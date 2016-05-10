@@ -24,6 +24,14 @@ public class LoopRingBuffer {
         put(values);
     }
 
+    public LoopRingBuffer(LoopRingBuffer lrb, int length)
+    {
+        this(length);
+        float[] data = lrb.getBuffer();
+        for(int i = 0; i < length; i++)
+            put(data[i]);
+    }
+
     public int getPosition() {
         return pos;
     }

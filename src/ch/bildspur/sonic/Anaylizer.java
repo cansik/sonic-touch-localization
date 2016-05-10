@@ -198,4 +198,28 @@ public class Anaylizer {
 
         return 0;
     }
+
+    public int extendedThresholdAnalyzer(float[] f, float[] g, float threshold)
+    {
+        int passPointF = -1;
+        int passPointG = -1;
+
+        for(int i = 0; i < f.length; i++)
+        {
+            boolean isF = Math.abs(f[i]) >= threshold;
+            boolean isG = Math.abs(g[i]) >= threshold;
+
+            if(passPointF >= 0 && isF)
+                passPointF = i;
+
+            if(passPointG >= 0 && isG)
+                passPointG = i;
+
+            // break if both points found
+            if(passPointF >= 0 && passPointG >= 0)
+                break;
+        }
+
+        return passPointF - passPointG;
+    }
 }
