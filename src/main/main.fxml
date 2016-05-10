@@ -23,6 +23,7 @@
             <Canvas fx:id="visCanvasChannel2" height="70.0" width="200.0" />
             <Canvas fx:id="visCanvasChannel3" height="70.0" width="200.0" />
             <Canvas fx:id="visCanvasChannel4" height="70.0" width="200.0" />
+            <Canvas fx:id="visLevels" height="200.0" width="200.0" />
          </children>
       </VBox>
       <AnchorPane layoutX="201.0" layoutY="40.0" prefHeight="377.0" prefWidth="555.0" AnchorPane.leftAnchor="201.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
@@ -34,8 +35,8 @@
             <Canvas fx:id="visAnalyzing" height="71.0" layoutY="191.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="191.0" />
             <Canvas fx:id="visBufferLeft" height="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             <Canvas fx:id="visBufferRight" height="70.0" layoutY="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0" />
-            <Slider fx:id="sliderAmp" blockIncrement="100.0" layoutX="155.0" layoutY="341.0" majorTickUnit="100.0" max="20000.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" />
-            <Label layoutX="18.0" layoutY="333.0" text="Digital Amp:" />
+            <Slider fx:id="sliderAmp" layoutX="155.0" layoutY="341.0" majorTickUnit="10.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" />
+            <Label layoutX="24.0" layoutY="341.0" text="Digital Amp:" />
          </children>
       </AnchorPane>
       <Label layoutX="229.0" layoutY="435.0" text="Result:" AnchorPane.leftAnchor="229.0" AnchorPane.topAnchor="435.0" />

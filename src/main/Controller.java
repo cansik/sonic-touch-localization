@@ -3,6 +3,7 @@ package main;
 import ch.bildspur.sonic.*;
 import ch.fhnw.ether.audio.JavaSoundSource;
 import ch.fhnw.ether.audio.fx.AudioGain;
+import ch.fhnw.ether.media.Parameter;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -43,21 +44,23 @@ public class Controller implements IGestureHandler {
     public Canvas visAnalyzingRight;
     public Slider sliderAmp;
     public Canvas visTable;
+    public Canvas visLevels;
+
+    JavaSoundSource source;
 
     GestureRecognizer gr;
+    Levels levels;
+    AudioGain gain;
 
-    int bufferSize = 50000;
+    int bufferSize = 10000;
     int sampleSize = 4000;
 
     LoopRingBuffer bufferLeft = new LoopRingBuffer(bufferSize);
     LoopRingBuffer bufferRight = new LoopRingBuffer(bufferSize);
-    LoopRingBuffer buffer3 = new LoopRingBuffer(bufferSize);
 
     boolean thresholdPassed = false;
     int thresholdWait = 5;
     int thresholdTimer = 0;
-
-    float amp = 0;
 
     public void initialize()
     {
@@ -66,7 +69,7 @@ public class Controller implements IGestureHandler {
         });
 
         sliderAmp.valueProperty().addListener((observable, oldValue, newValue) -> {
-            amp = newValue.floatValue();
+            gain.setVal("gain", newValue.floatValue());
         });
     }
 
@@ -77,15 +80,16 @@ public class Controller implements IGestureHandler {
         String[] sources = AudioUtils.getSources();
         System.out.println(Arrays.toString(sources));
 
-        JavaSoundSource source;
-
         // 8 channel
-        //source = new JavaSoundSource(8, 96000, 64);
+        source = new JavaSoundSource(8, 96000, 256);
 
         // 2 channel
-        source = new JavaSoundSource(2, 96000, 256*2);
+        //source = new JavaSoundSource(2, 96000, 256*2);
 
-        LaneRecorder recorder = new LaneRecorder(source, new AudioGain());
+        levels = new Levels();
+        gain = new AudioGain();
+
+        LaneRecorder recorder = new LaneRecorder(source, gain, levels);
         gr = new GestureRecognizer(this);
         recorder.getProgram().addLast(gr);
 
@@ -137,13 +141,11 @@ public class Controller implements IGestureHandler {
 
         float y = (float)c.getHeight() / 2f;
 
-        float postAmp = amp; //100000;
-
         for(int i = 0; i < buffer.length - 1; i++)
         {
             float v = buffer[i];
 
-            gc.fillOval(space * i, y + v * postAmp, 3, 3);
+            gc.fillOval(space * i, y + v, 3, 3);
         }
 
         // draw threshold
@@ -162,6 +164,32 @@ public class Controller implements IGestureHandler {
         // draw border
         gc.setStroke(Color.BLACK);
         gc.strokeRect(1, 1, c.getWidth() - 2, c.getHeight() - 2);
+    }
+
+    void drawLevels()
+    {
+        GraphicsContext gc = visLevels.getGraphicsContext2D();
+        gc.clearRect(0, 0, visLevels.getWidth(), visLevels.getHeight());
+
+        int channelCount = source.getNumChannels();
+        double cWidth = visLevels.getWidth() / channelCount;
+
+        for(int i = 0; i < channelCount; i++)
+        {
+            float l = levels.getLevel(i);
+            gc.setFill(Color.GOLD);
+            gc.fillRect(i * cWidth, (1f-l) * visLevels.getHeight(), cWidth, l * visLevels.getHeight());
+        }
+
+        // draw threshold
+        gc.setStroke(Color.GREEN);
+        float t = gr.getThreshold();
+        double y = (1f-t) * visLevels.getHeight();
+        gc.strokeLine(0, y, visLevels.getWidth(), y);
+
+        // draw border
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(1, 1, visLevels.getWidth() - 2, visLevels.getHeight() - 2);
     }
 
     @Override
@@ -195,15 +223,13 @@ public class Controller implements IGestureHandler {
             thresholdTimer++;
         }
 
-/*
+
         float[] c3 = Arrays.copyOf(channels[2], channels[2].length);
         float[] c4 = Arrays.copyOf(channels[3], channels[3].length);
-        Platform.runLater(() -> drawBuffer(c3, visCanvasChannel3, Color.GREEN, false));
-        Platform.runLater(() -> drawBuffer(c4, visCanvasChannel4, Color.YELLOW, false));
-        buffer3.put(c3);
+        Platform.runLater(() -> drawBuffer(c3, visCanvasChannel3, Color.GREEN, false, -1));
+        Platform.runLater(() -> drawBuffer(c4, visCanvasChannel4, Color.ORANGE, false, -1));
 
-        Platform.runLater(() -> drawBuffer(buffer3.getBuffer(), visBufferRight, Color.GREEN, true));
-*/
+        Platform.runLater(this::drawLevels);
     }
 
     private void doAnalyze()
