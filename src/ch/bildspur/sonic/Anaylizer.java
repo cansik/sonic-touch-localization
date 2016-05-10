@@ -179,12 +179,12 @@ public class Anaylizer {
      * Detects which channel has first overthrown the threshold.
      * @return 1 if f, -1 if g and 0 if nothing
      */
-    public int thresholdAnalyzer(float[] f, float[] g, float threshold)
+    public int thresholdAnalyzer(float[] f, float[] g, float threshold, float gain)
     {
         for(int i = 0; i < f.length; i++)
         {
-            boolean isF = Math.abs(f[i]) >= threshold;
-            boolean isG = Math.abs(g[i]) >= threshold;
+            boolean isF = Math.abs(f[i] / gain) >= threshold;
+            boolean isG = Math.abs(g[i] / gain) >= threshold;
 
             if(isF && isG)
                 return 0;

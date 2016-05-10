@@ -69,8 +69,14 @@ public class Controller implements IGestureHandler {
         });
 
         sliderAmp.valueProperty().addListener((observable, oldValue, newValue) -> {
-            gain.setVal("gain", newValue.floatValue());
+            setGain(newValue.floatValue());
         });
+    }
+
+    public void setGain(float value)
+    {
+        gain.setVal("gain", value);
+        gr.setGain(value);
     }
 
     public void btnTest_clicked(ActionEvent actionEvent) {
@@ -245,7 +251,7 @@ public class Controller implements IGestureHandler {
 
         float bourke = a.crossCorrelationBourke(f, g, f.length, 100);
 
-        int thr = a.thresholdAnalyzer(f, g, gr.getThreshold());
+        int thr = a.thresholdAnalyzer(f, g, gr.getThreshold(), gr.getGain());
 
         System.out.print("Threshold: " + thr + " | ");
         System.out.print("Cross Bourke: " + bourke + " | ");
