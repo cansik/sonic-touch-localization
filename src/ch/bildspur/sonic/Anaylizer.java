@@ -174,4 +174,22 @@ public class Anaylizer {
         // set the delay
         return maxIndex - x1.length;
     }
+
+    /***
+     * Detects which channel has first overthrown the threshold.
+     * @return 1 if f, -1 if g and 0 if nothing
+     */
+    public int thresholdAnalyzer(float[] f, float[] g, float threshold)
+    {
+        for(int i = 0; i < f.length; i++)
+        {
+            if(f[i] > threshold)
+                return 1;
+
+            if(g[i] > threshold)
+                return -1;
+        }
+
+        return 0;
+    }
 }

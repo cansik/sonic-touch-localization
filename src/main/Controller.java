@@ -45,7 +45,7 @@ public class Controller implements IGestureHandler {
 
     GestureRecognizer gr;
 
-    int bufferSize = 24000;
+    int bufferSize = 50000;
     int sampleSize = 4000;
 
     LoopRingBuffer bufferLeft = new LoopRingBuffer(bufferSize);
@@ -53,7 +53,7 @@ public class Controller implements IGestureHandler {
     LoopRingBuffer buffer3 = new LoopRingBuffer(bufferSize);
 
     boolean thresholdPassed = false;
-    int thresholdWait = 10;
+    int thresholdWait = 5;
     int thresholdTimer = 0;
 
     float amp = 0;
@@ -82,7 +82,7 @@ public class Controller implements IGestureHandler {
         //source = new JavaSoundSource(8, 96000, 64);
 
         // 2 channel
-        source = new JavaSoundSource(2, 44100, 256*2);
+        source = new JavaSoundSource(2, 96000, 256*2);
 
         LaneRecorder recorder = new LaneRecorder(source, new AudioGain());
         gr = new GestureRecognizer(this);
@@ -93,7 +93,7 @@ public class Controller implements IGestureHandler {
         SwingUtilities.invokeLater(recorder::start);
     }
 
-    void drawBuffer(float[] buffer, Canvas c, Color color, boolean drawThreshold)
+    void drawBuffer(float[] buffer, Canvas c, Color color, boolean drawThreshold, int pos)
     {
         GraphicsContext gc = c.getGraphicsContext2D();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
@@ -116,9 +116,16 @@ public class Controller implements IGestureHandler {
         }
 
         // draw threshold
-        gc.setStroke(Color.GREEN);
         if(drawThreshold) {
+            gc.setStroke(Color.GREEN);
             gc.strokeLine(0, y + y * gr.getThreshold() * -1, c.getWidth(), y + y * gr.getThreshold() * -1);
+        }
+
+        //draw position
+        if(pos >= 0)
+        {
+            gc.setStroke(Color.GRAY);
+            gc.strokeLine(space * pos, 0, space * pos, c.getHeight());
         }
     }
 
@@ -131,12 +138,12 @@ public class Controller implements IGestureHandler {
         bufferLeft.put(c1);
         bufferRight.put(c2);
 
-        Platform.runLater(() -> drawBuffer(c1, visCanvasChannel1, Color.BLUE, false));
-        Platform.runLater(() -> drawBuffer(c2, visCanvasChannel2, Color.RED, false));
+        Platform.runLater(() -> drawBuffer(c1, visCanvasChannel1, Color.BLUE, false, -1));
+        Platform.runLater(() -> drawBuffer(c2, visCanvasChannel2, Color.RED, false, -1));
 
         // draw full buffer
-        Platform.runLater(() -> drawBuffer(bufferLeft.getBuffer(), visBufferLeft, Color.BLUE, true));
-        Platform.runLater(() -> drawBuffer(bufferRight.getBuffer(), visBufferRight, Color.RED, true));
+        Platform.runLater(() -> drawBuffer(bufferLeft.getBuffer(), visBufferLeft, Color.BLUE, true, bufferLeft.getPosition()));
+        Platform.runLater(() -> drawBuffer(bufferRight.getBuffer(), visBufferRight, Color.RED, true, bufferLeft.getPosition()));
 
 
         //threshold
@@ -169,13 +176,19 @@ public class Controller implements IGestureHandler {
         float[] f = bufferLeft.getLatest(sampleSize);
         float[] g = bufferRight.getLatest(sampleSize);
 
-        Platform.runLater(() -> drawBuffer(f, visAnalyzing, Color.CYAN, true));
-        Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true));
+        Platform.runLater(() -> drawBuffer(f, visAnalyzing, Color.CYAN, true, -1));
+        Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true, -1));
 
         Anaylizer a = new Anaylizer();
         float corr = a.execCorrelation(f, g);
 
-        System.out.print("Corss: " + corr);
+        float bourke = a.crossCorrelationBourke(f, g, f.length, 100);
+
+        int thr = a.thresholdAnalyzer(f, g, gr.getThreshold());
+
+        System.out.print("Threshold: " + thr + " | ");
+        System.out.print("Cross Bourke: " + bourke + " | ");
+        System.out.print("Cross Exec: " + corr);
 
         if(corr > 0)
         {

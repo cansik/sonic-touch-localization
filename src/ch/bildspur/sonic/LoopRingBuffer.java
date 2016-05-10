@@ -18,6 +18,10 @@ public class LoopRingBuffer {
         buffer = new float[size];
     }
 
+    public int getPosition() {
+        return pos;
+    }
+
     public void put(float value)
     {
         buffer[pos] = value;
