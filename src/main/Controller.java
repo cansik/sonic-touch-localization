@@ -154,7 +154,7 @@ public class Controller implements IGestureHandler {
         {
             float v = buffer[i];
 
-            gc.fillOval(space * i, y + v, 3, 3);
+            gc.fillOval(space * i, y + (y * v), 3, 3);
         }
 
         // draw threshold

@@ -52,6 +52,8 @@ public class AnalyzerController {
 
     void loadData(File dir)
     {
+        System.out.println("Loading dataset '" + dir.getName() + "'...");
+
         for(File file : dir.listFiles())
         {
             if(file.getName().equals("LL.wav"))
@@ -67,14 +69,30 @@ public class AnalyzerController {
                 bufferRL = loadWave(file);
         }
 
+        //calculate size factor for normalisation
+        float max = 0;
+        for(int i = 0; i < bufferLL.size(); i++)
+        {
+            if(max < bufferLL.get(i)) max = bufferLL.get(i);
+            if(max < bufferLU.get(i)) max = bufferLU.get(i);
+            if(max < bufferRU.get(i)) max = bufferRU.get(i);
+            if(max < bufferRL.get(i)) max = bufferRL.get(i);
+        }
+        float gainFactor = 1.0f / max;
+
         // visualize data
-        drawBuffer(bufferLL.getBuffer(), visLeftLower, Color.BLUE);
-        drawBuffer(bufferLU.getBuffer(), visLeftUpper, Color.RED);
-        drawBuffer(bufferRU.getBuffer(), visRightUpper, Color.GREEN);
-        drawBuffer(bufferRL.getBuffer(), visRightLower, Color.ORANGE);
+        drawBuffer(bufferLL.getBuffer(), visLeftLower, Color.BLUE, gainFactor);
+        drawBuffer(bufferLU.getBuffer(), visLeftUpper, Color.RED, gainFactor);
+        drawBuffer(bufferRU.getBuffer(), visRightUpper, Color.GREEN, gainFactor);
+        drawBuffer(bufferRL.getBuffer(), visRightLower, Color.ORANGE, gainFactor);
     }
 
     void drawBuffer(float[] buffer, Canvas c, Color color)
+    {
+        drawBuffer(buffer, c, color, 1.0f);
+    }
+
+    void drawBuffer(float[] buffer, Canvas c, Color color, float gainFactor)
     {
         GraphicsContext gc = c.getGraphicsContext2D();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
@@ -88,7 +106,7 @@ public class AnalyzerController {
         {
             float v = buffer[i];
 
-            gc.fillOval(space * i, y + v, 3, 3);
+            gc.fillOval(space * i, y + (y * v * gainFactor), 1, 1);
         }
 
         // draw border
