@@ -12,10 +12,13 @@ import ch.fhnw.ether.media.RenderCommandException;
 import ch.fhnw.ether.media.RenderProgram;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 
@@ -37,6 +40,7 @@ public class AnalyzerController {
     public Canvas visRightLower;
     public Canvas visTable;
     public ProgressBar progressBar;
+    public Label dataSetName;
 
     LoopRingBuffer bufferLL;
     LoopRingBuffer bufferLU;
@@ -54,13 +58,16 @@ public class AnalyzerController {
         float sonicSpeed = 343.2f; // m/s
         float samplingRate = 44100; // hz
         float tableLength = 2; // m
-        float threshold = 0.5f;
+        float threshold = 0.2f;
 
         // calculate path percentage
-        double leftPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, f, g);
-        double rightPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, k, h);
+        double leftPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength - 1, threshold, f, g);
+        double rightPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength - 1, threshold, k, h);
         double topPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, g, h);
         double bottomPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, f, k);
+
+        double diagnoal1 = getPercentagePosition(sonicSpeed, samplingRate, (float)Math.sqrt(5), threshold, f, h);
+        double diagnoal2 = getPercentagePosition(sonicSpeed, samplingRate, (float)Math.sqrt(5), threshold, g, k);
 
         // draw result
         GraphicsContext gc = visTable.getGraphicsContext2D();
@@ -72,6 +79,11 @@ public class AnalyzerController {
 
         double size = 10;
         double hs = size / 2;
+
+        // draw grid
+        gc.setStroke(Color.DARKGRAY);
+        gc.strokeLine(width / 2, 0, width / 2, height);
+        gc.strokeLine(0, height / 2, width, height / 2);
 
         // left + top
         gc.setStroke(Color.BLUE);
@@ -89,10 +101,23 @@ public class AnalyzerController {
         gc.setStroke(Color.MAGENTA);
         gc.strokeOval(width * bottomPer - hs, height * rightPer - hs, size, size);
 
-        // draw grid
-        gc.setStroke(Color.DARKGRAY);
-        gc.strokeLine(width / 2, 0, width / 2, height);
-        gc.strokeLine(0, height / 2, width, height / 2);
+        // diagonal 1
+        gc.setStroke(Color.ORANGE);
+        gc.strokeOval(width * diagnoal1 - hs, height * diagnoal1 - hs, size, size);
+
+        // diagonal 2
+        gc.setStroke(Color.LIMEGREEN);
+        gc.strokeOval(width * diagnoal2 - hs, height * diagnoal2 - hs, size, size);
+
+        // calculate center point
+        double meanX = (width * topPer + width * bottomPer) / 2; //+ width * diagnoal1 + width * diagnoal2) / 4;
+        double meanY = (height * rightPer + height * leftPer) / 2; // + height * diagnoal1 + height * diagnoal2) / 4;
+        gc.setStroke(Color.GOLD);
+        gc.strokeOval(meanX - hs, meanY - hs, size, size);
+
+        // draw arrow
+        gc.setStroke(Color.BLUE);
+        gc.strokeLine(meanX, meanY, width / 2, height / 2);
 
         // draw border
         gc.setStroke(Color.BLACK);
@@ -134,6 +159,7 @@ public class AnalyzerController {
     {
         resetProgress();
         System.out.println("Loading dataset '" + dir.getName() + "'...");
+        dataSetName.setText(dir.getName());
 
         for(File file : dir.listFiles())
         {
@@ -244,5 +270,11 @@ public class AnalyzerController {
         System.out.println("loaded!");
 
         return lrb;
+    }
+
+    public void visMouse_Moved(MouseEvent event) {
+        Canvas c = (Canvas)event.getSource();
+        int i = (int)(event.getX() / c.getWidth() * bufferLL.size());
+        System.out.println(event.getX() + ": " + bufferLL.get(i));
     }
 }

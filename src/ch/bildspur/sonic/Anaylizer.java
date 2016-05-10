@@ -209,10 +209,10 @@ public class Anaylizer {
             boolean isF = Math.abs(f[i]) >= threshold;
             boolean isG = Math.abs(g[i]) >= threshold;
 
-            if(passPointF >= 0 && isF)
+            if(passPointF < 0 && isF)
                 passPointF = i;
 
-            if(passPointG >= 0 && isG)
+            if(passPointG < 0 && isG)
                 passPointG = i;
 
             // break if both points found
