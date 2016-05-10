@@ -14,6 +14,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 
@@ -21,6 +22,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -33,11 +35,20 @@ public class AnalyzerController {
     public Canvas visRightUpper;
     public Canvas visRightLower;
     public Canvas visTable;
+    public ProgressBar progressBar;
 
     LoopRingBuffer bufferLL;
     LoopRingBuffer bufferLU;
     LoopRingBuffer bufferRU;
     LoopRingBuffer bufferRL;
+
+
+    public void btnThreshold_Clicked(ActionEvent actionEvent) {
+        float[] f = bufferLL.getBuffer();
+        float[] g = bufferLU.getBuffer();
+        float[] h = bufferRU.getBuffer();
+        float[] j = bufferRL.getBuffer();
+    }
 
     public void btnLoad_Clicked(ActionEvent actionEvent) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -46,12 +57,23 @@ public class AnalyzerController {
         if(selectedDirectory == null){
             System.out.println("No directory selected!");
         }else{
-            Platform.runLater(() -> loadData(selectedDirectory));
+            loadData(selectedDirectory);
         }
+    }
+
+    void updateProgress(double value)
+    {
+        Platform.runLater(() -> progressBar.setProgress(progressBar.getProgress() + value));
+    }
+
+    void resetProgress()
+    {
+        Platform.runLater(() -> progressBar.setProgress(0));
     }
 
     void loadData(File dir)
     {
+        resetProgress();
         System.out.println("Loading dataset '" + dir.getName() + "'...");
 
         for(File file : dir.listFiles())
