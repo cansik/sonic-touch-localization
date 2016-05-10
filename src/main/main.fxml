@@ -35,7 +35,7 @@
             <Canvas fx:id="visAnalyzing" height="71.0" layoutY="191.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="191.0" />
             <Canvas fx:id="visBufferLeft" height="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             <Canvas fx:id="visBufferRight" height="70.0" layoutY="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0" />
-            <Slider fx:id="sliderAmp" layoutX="155.0" layoutY="341.0" majorTickUnit="10.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" />
+            <Slider fx:id="sliderAmp" layoutX="155.0" layoutY="341.0" majorTickUnit="10.0" max="500.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" />
             <Label layoutX="24.0" layoutY="341.0" text="Digital Amp:" />
          </children>
       </AnchorPane>

@@ -59,8 +59,11 @@ public class Controller implements IGestureHandler {
     LoopRingBuffer bufferRight = new LoopRingBuffer(bufferSize);
 
     boolean thresholdPassed = false;
-    int thresholdWait = 5;
+    int thresholdWait = 20;
     int thresholdTimer = 0;
+
+    float[] f;
+    float[] g;
 
     public void initialize()
     {
@@ -214,7 +217,6 @@ public class Controller implements IGestureHandler {
         Platform.runLater(() -> drawBuffer(bufferLeft.getBuffer(), visBufferLeft, Color.BLUE, true, bufferLeft.getPosition()));
         Platform.runLater(() -> drawBuffer(bufferRight.getBuffer(), visBufferRight, Color.RED, true, bufferLeft.getPosition()));
 
-
         //threshold
         if(thresholdPassed)
         {
@@ -240,8 +242,8 @@ public class Controller implements IGestureHandler {
 
     private void doAnalyze()
     {
-        float[] f = bufferLeft.getLatest(sampleSize);
-        float[] g = bufferRight.getLatest(sampleSize);
+        f = bufferLeft.getLatest(sampleSize);
+        g = bufferRight.getLatest(sampleSize);
 
         Platform.runLater(() -> drawBuffer(f, visAnalyzing, Color.CYAN, true, -1));
         Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true, -1));
@@ -330,6 +332,15 @@ public class Controller implements IGestureHandler {
     }
 
     public void btnSave_clicked(ActionEvent actionEvent) {
-        saveAllBuffer();
+        //saveAllBuffer();
+        LoopRingBuffer flrb = new LoopRingBuffer(f.length+1);
+        flrb.put(f);
+        flrb.saveBuffer("data/f_buffer.txt");
+
+        LoopRingBuffer glrb = new LoopRingBuffer(g.length+1);
+        flrb.put(g);
+        flrb.saveBuffer("data/g_buffer.txt");
+
+        System.out.println("buffer saved!");
     }
 }

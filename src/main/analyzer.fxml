@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.effect.*?>
+<?import java.lang.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="612.0" prefWidth="756.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.analyzer.AnalyzerController">
+   <children>
+      <Label layoutX="36.0" layoutY="78.0" text="LEFT_LOWER:" />
+      <Label layoutX="38.0" layoutY="138.0" text="LEFT_UPPER:" />
+      <Label layoutX="33.0" layoutY="213.0" text="RIGHT_UPPER:" />
+      <Label layoutX="31.0" layoutY="273.0" text="RIGHT_LOWER:" />
+      <Canvas fx:id="visLeftLower" height="60.0" layoutX="152.0" layoutY="56.0" width="597.0" />
+      <Canvas fx:id="visLeftUpper" height="60.0" layoutX="152.0" layoutY="116.0" width="597.0" />
+      <Canvas fx:id="visRightUpper" height="60.0" layoutX="152.0" layoutY="191.0" width="597.0" />
+      <Canvas fx:id="visRightLower" height="60.0" layoutX="148.0" layoutY="251.0" width="597.0" />
+      <ToolBar prefHeight="40.0" prefWidth="756.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+          <Button mnemonicParsing="false" onAction="#btnLoad_Clicked" text="Load" />
+        </items>
+      </ToolBar>
+      <Canvas fx:id="visTable" height="172.0" layoutX="152.0" layoutY="373.0" width="300.0" />
+      <Label layoutX="80.0" layoutY="451.0" text="TABLE:" />
+   </children>
+</AnchorPane>
