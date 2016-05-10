@@ -55,12 +55,9 @@ public class GestureRecognizer extends AbstractRenderCommand<IAudioRenderTarget>
         int bufferSize = samples.length / frame.nChannels;
         float[][] channels = new float[frame.nChannels][bufferSize];
 
-        for(int c = 1; c <= frame.nChannels; c++)
-        {
-            for(int i = 0; i < bufferSize; i++) {
-                channels[c - 1][i] = samples[c * i];
-            }
-        }
+        for(int i = 0; i < samples.length; i+= frame.nChannels)
+            for(int ch = 0; ch < frame.nChannels; ch++)
+                channels[ch][(i+ch) / frame.nChannels] = samples[i+ch];
 
         checkThreshold(channels, threshold);
 
