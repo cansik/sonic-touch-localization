@@ -42,6 +42,7 @@ public class Controller implements IGestureHandler {
     public Canvas visAnalyzing;
     public Canvas visAnalyzingRight;
     public Slider sliderAmp;
+    public Canvas visTable;
 
     GestureRecognizer gr;
 
@@ -93,16 +94,46 @@ public class Controller implements IGestureHandler {
         SwingUtilities.invokeLater(recorder::start);
     }
 
+    void drawTableResult(int thresholdResult, float crossBourke)
+    {
+        GraphicsContext gc = visTable.getGraphicsContext2D();
+        gc.clearRect(0, 0, visTable.getWidth(), visTable.getHeight());
+
+        double centerWidth = visTable.getWidth() / 2;
+
+        // draw threshold
+        if(thresholdResult == 1)
+        {
+            gc.setFill(Color.CYAN);
+            gc.fillRect(0, 0, centerWidth, visTable.getHeight());
+        }
+        else if(thresholdResult == -1)
+        {
+            gc.setFill(Color.MAGENTA);
+            gc.fillRect(centerWidth, 0, centerWidth, visTable.getHeight());
+        }
+        else
+        {
+            gc.setFill(Color.DARKGRAY);
+            gc.fillRect(centerWidth - 10, 0, 20, visTable.getHeight());
+        }
+
+        // draw bourke
+        gc.setFill(Color.BLACK);
+        gc.fillOval(visTable.getWidth() * crossBourke, visTable.getHeight() / 2, 10, 10);
+
+        // border
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(1, 1, visTable.getWidth() - 2, visTable.getHeight() - 2);
+    }
+
     void drawBuffer(float[] buffer, Canvas c, Color color, boolean drawThreshold, int pos)
     {
         GraphicsContext gc = c.getGraphicsContext2D();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         float space = (float)(c.getWidth() / buffer.length);
 
-        gc.setStroke(Color.BLACK);
         gc.setFill(color);
-
-        gc.strokeRect(1, 1, c.getWidth() - 2, c.getHeight() - 2);
 
         float y = (float)c.getHeight() / 2f;
 
@@ -127,6 +158,10 @@ public class Controller implements IGestureHandler {
             gc.setStroke(Color.GRAY);
             gc.strokeLine(space * pos, 0, space * pos, c.getHeight());
         }
+
+        // draw border
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(1, 1, c.getWidth() - 2, c.getHeight() - 2);
     }
 
     @Override
@@ -189,6 +224,8 @@ public class Controller implements IGestureHandler {
         System.out.print("Threshold: " + thr + " | ");
         System.out.print("Cross Bourke: " + bourke + " | ");
         System.out.print("Cross Exec: " + corr);
+
+        drawTableResult(thr, bourke);
 
         if(corr > 0)
         {

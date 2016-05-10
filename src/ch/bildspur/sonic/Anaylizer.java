@@ -183,10 +183,13 @@ public class Anaylizer {
     {
         for(int i = 0; i < f.length; i++)
         {
-            if(f[i] > threshold)
+            if(f[i] >= threshold && g[i] >= threshold)
+                return 0;
+
+            if(f[i] >= threshold)
                 return 1;
 
-            if(g[i] > threshold)
+            if(g[i] >= threshold)
                 return -1;
         }
 
