@@ -1,20 +1,16 @@
 package main.analyzer;
 
-import ch.bildspur.sonic.Anaylizer;
+import ch.bildspur.sonic.TDOAAnalyzer;
 import ch.bildspur.sonic.LoopRingBuffer;
 import ch.bildspur.sonic.Vector2d;
 import ch.fhnw.ether.audio.IAudioRenderTarget;
 import ch.fhnw.ether.audio.JavaSoundTarget;
-import ch.fhnw.ether.audio.NullAudioTarget;
 import ch.fhnw.ether.audio.URLAudioSource;
-import ch.fhnw.ether.media.IRenderTarget;
 import ch.fhnw.ether.media.IScheduler;
 import ch.fhnw.ether.media.RenderCommandException;
 import ch.fhnw.ether.media.RenderProgram;
-import com.sun.corba.se.impl.orbutil.graph.Graph;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -26,15 +22,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,6 +49,24 @@ public class AnalyzerController {
 
 
     public void btnThreshold_Clicked(ActionEvent actionEvent) {
+        float threshold = 0.2f;
+        TDOAAnalyzer an = new TDOAAnalyzer();
+        runAnalyze((a, b) -> (float)an.extendedThresholdAnalyzer(a, b, threshold));
+    }
+
+    public void btnLoad_Clicked(ActionEvent actionEvent) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(((Node)actionEvent.getTarget()).getScene().getWindow());
+
+        if(selectedDirectory == null){
+            System.out.println("No directory selected!");
+        }else{
+            SwingUtilities.invokeLater(() -> loadData(selectedDirectory));
+        }
+    }
+
+    void runAnalyze(Function2<float[], float[], Float> algorithm)
+    {
         float[] f = bufferLL.getBuffer();
         float[] g = bufferLU.getBuffer();
         float[] h = bufferRU.getBuffer();
@@ -68,16 +76,15 @@ public class AnalyzerController {
         float sonicSpeed = 343.2f; // m/s
         float samplingRate = 44100; // hz
         float tableLength = 2; // m
-        float threshold = 0.2f;
 
         // calculate path percentage
-        double leftPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength - 1, threshold, f, g);
-        double rightPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength - 1, threshold, k, h);
-        double topPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, g, h);
-        double bottomPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, threshold, f, k);
+        double leftPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength - 1, f, g, algorithm);
+        double rightPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength - 1, k, h, algorithm);
+        double topPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, g, h, algorithm);
+        double bottomPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, f, k, algorithm);
 
-        double diagnoal1 = getPercentagePosition(sonicSpeed, samplingRate, (float)Math.sqrt(5), threshold, f, h);
-        double diagnoal2 = getPercentagePosition(sonicSpeed, samplingRate, (float)Math.sqrt(5), threshold, g, k);
+        double diagnoal1 = getPercentagePosition(sonicSpeed, samplingRate, (float)Math.sqrt(5), f, h, algorithm);
+        double diagnoal2 = getPercentagePosition(sonicSpeed, samplingRate, (float)Math.sqrt(5), g, k, algorithm);
 
         // draw result
         GraphicsContext gc = visTable.getGraphicsContext2D();
@@ -140,17 +147,6 @@ public class AnalyzerController {
         analyzeResult(meanX, meanY);
     }
 
-    public void btnLoad_Clicked(ActionEvent actionEvent) {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(((Node)actionEvent.getTarget()).getScene().getWindow());
-
-        if(selectedDirectory == null){
-            System.out.println("No directory selected!");
-        }else{
-            SwingUtilities.invokeLater(() -> loadData(selectedDirectory));
-        }
-    }
-
     void analyzeResult(double x, double y) {
         double width = visTable.getWidth();
         double height = visTable.getHeight();
@@ -208,10 +204,9 @@ public class AnalyzerController {
         });
     }
 
-    double getPercentagePosition(float sonicSpeed, float samplingRate, float tableLength, float threshold, float[] f, float[] g)
+    double getPercentagePosition(float sonicSpeed, float samplingRate, float tableLength, float[] f, float[] g, Function2<float[], float[], Float> algorithm)
     {
-        Anaylizer a = new Anaylizer();
-        double delta = a.extendedThresholdAnalyzer(f, g, threshold);
+        double delta = algorithm.apply(f, g);
         double fullTime = 1/sonicSpeed*tableLength;
         double samplesForDistance = fullTime * samplingRate;
         double sampleWay = (samplesForDistance / 2) + delta;

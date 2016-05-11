@@ -3,10 +3,7 @@ package main;
 import ch.bildspur.sonic.*;
 import ch.fhnw.ether.audio.JavaSoundSource;
 import ch.fhnw.ether.audio.fx.AudioGain;
-import ch.fhnw.ether.media.Parameter;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -248,7 +245,7 @@ public class Controller implements IGestureHandler {
         Platform.runLater(() -> drawBuffer(f, visAnalyzing, Color.CYAN, true, -1));
         Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true, -1));
 
-        Anaylizer a = new Anaylizer();
+        TDOAAnalyzer a = new TDOAAnalyzer();
         float corr = a.execCorrelation(f, g);
 
         float bourke = a.crossCorrelationBourke(f, g, f.length, 100);
@@ -292,7 +289,7 @@ public class Controller implements IGestureHandler {
         float[] f = lrb1.getBuffer();
         float[] g = lrb2.getBuffer();
 
-        Anaylizer a = new Anaylizer();
+        TDOAAnalyzer a = new TDOAAnalyzer();
         float[] cross = a.crossCorrelation(f, g);
 
         float corr = a.execCorrelation(f, g);
