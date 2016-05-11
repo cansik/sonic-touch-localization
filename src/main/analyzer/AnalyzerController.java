@@ -244,7 +244,7 @@ public class AnalyzerController {
 
         try {
             // create source
-            URLAudioSource source = new URLAudioSource(waveFile.toURL());
+            URLAudioSource source = new URLAudioSource(waveFile.toURL(), 1);
             long time = (long) Math.ceil(source.getLengthInSeconds() * 1000);
             AudioBufferReader bufferReader = new AudioBufferReader();
             RenderProgram<IAudioRenderTarget> program = new RenderProgram<>(source, bufferReader);
@@ -254,8 +254,7 @@ public class AnalyzerController {
             target.useProgram(program);
 
             target.start();
-            Thread.sleep(time);
-            //target.sleepUntil(time);
+            target.sleepUntil(IScheduler.NOT_RENDERING);
             target.stop();
 
             //read buffer
@@ -264,8 +263,6 @@ public class AnalyzerController {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (RenderCommandException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
