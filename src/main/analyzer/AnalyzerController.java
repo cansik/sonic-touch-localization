@@ -112,12 +112,14 @@ public class AnalyzerController {
         // calculate center point
         double meanX = (width * topPer + width * bottomPer) / 2; //+ width * diagnoal1 + width * diagnoal2) / 4;
         double meanY = (height * rightPer + height * leftPer) / 2; // + height * diagnoal1 + height * diagnoal2) / 4;
-        gc.setStroke(Color.GOLD);
-        gc.strokeOval(meanX - hs, meanY - hs, size, size);
 
         // draw arrow
         gc.setStroke(Color.BLUE);
         gc.strokeLine(meanX, meanY, width / 2, height / 2);
+
+        // draw center
+        gc.setStroke(Color.GOLD);
+        gc.strokeOval(meanX - hs, meanY - hs, size, size);
 
         // draw border
         gc.setStroke(Color.BLACK);
