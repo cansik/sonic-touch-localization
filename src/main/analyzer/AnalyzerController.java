@@ -10,6 +10,7 @@ import ch.fhnw.ether.media.IRenderTarget;
 import ch.fhnw.ether.media.IScheduler;
 import ch.fhnw.ether.media.RenderCommandException;
 import ch.fhnw.ether.media.RenderProgram;
+import com.sun.corba.se.impl.orbutil.graph.Graph;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -18,6 +19,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
@@ -29,6 +32,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 
 /**
  * Created by cansik on 10/05/16.
@@ -41,6 +45,8 @@ public class AnalyzerController {
     public Canvas visTable;
     public ProgressBar progressBar;
     public Label dataSetName;
+    public TextField dataPointLabelLL;
+    public TextArea tbConsole;
 
     LoopRingBuffer bufferLL;
     LoopRingBuffer bufferLU;
@@ -113,6 +119,8 @@ public class AnalyzerController {
         double meanX = (width * topPer + width * bottomPer) / 2; //+ width * diagnoal1 + width * diagnoal2) / 4;
         double meanY = (height * rightPer + height * leftPer) / 2; // + height * diagnoal1 + height * diagnoal2) / 4;
 
+        log("Center: (" + meanX + "|" + meanY + ")");
+
         // draw arrow
         gc.setStroke(Color.BLUE);
         gc.strokeLine(meanX, meanY, width / 2, height / 2);
@@ -133,8 +141,31 @@ public class AnalyzerController {
         if(selectedDirectory == null){
             System.out.println("No directory selected!");
         }else{
-            loadData(selectedDirectory);
+            SwingUtilities.invokeLater(() -> loadData(selectedDirectory));
         }
+    }
+
+    void analyzeResult(double x, double y)
+    {
+        double width = visTable.getWidth();
+        double height = visTable.getHeight();
+
+
+    }
+
+    void log(String message)
+    {
+        Platform.runLater ( () -> {
+            tbConsole.setText(tbConsole.getText() + "\n" + "> " + message);
+            tbConsole.setScrollTop(Double.MAX_VALUE);
+        });
+    }
+
+    void clearLog()
+    {
+        Platform.runLater ( () -> {
+            tbConsole.setText("Analyzer");
+        });
     }
 
     double getPercentagePosition(float sonicSpeed, float samplingRate, float tableLength, float threshold, float[] f, float[] g)
@@ -157,34 +188,31 @@ public class AnalyzerController {
         Platform.runLater(() -> progressBar.setProgress(0));
     }
 
-    void loadData(File dir)
-    {
-        resetProgress();
-        System.out.println("Loading dataset '" + dir.getName() + "'...");
-        dataSetName.setText(dir.getName());
+    void loadData(File dir) {
+        clearLog();
+        log("Loading dataset '" + dir.getName() + "'...");
 
-        for(File file : dir.listFiles())
-        {
-            if(file.getName().equals("LL.wav"))
+        for (File file : dir.listFiles()) {
+            if (file.getName().equals("LL.wav"))
                 bufferLL = loadWave(file);
 
-            if(file.getName().equals("LU.wav"))
+            if (file.getName().equals("LU.wav"))
                 bufferLU = loadWave(file);
 
-            if(file.getName().equals("RU.wav"))
+            if (file.getName().equals("RU.wav"))
                 bufferRU = loadWave(file);
 
-            if(file.getName().equals("RL.wav"))
+            if (file.getName().equals("RL.wav"))
                 bufferRL = loadWave(file);
         }
 
         // set mimium length of all
         int min = Integer.MAX_VALUE;
 
-        if(min > bufferLL.size()) min = bufferLL.size();
-        if(min > bufferLU.size()) min = bufferLU.size();
-        if(min > bufferRU.size()) min = bufferRU.size();
-        if(min > bufferRL.size()) min = bufferRL.size();
+        if (min > bufferLL.size()) min = bufferLL.size();
+        if (min > bufferLU.size()) min = bufferLU.size();
+        if (min > bufferRU.size()) min = bufferRU.size();
+        if (min > bufferRL.size()) min = bufferRL.size();
 
         // resize arrays
         bufferLL = new LoopRingBuffer(bufferLL, min);
@@ -194,20 +222,34 @@ public class AnalyzerController {
 
         //calculate size factor for normalisation
         float max = 0;
-        for(int i = 0; i < bufferLL.size(); i++)
-        {
-            if(max < bufferLL.get(i)) max = bufferLL.get(i);
-            if(max < bufferLU.get(i)) max = bufferLU.get(i);
-            if(max < bufferRU.get(i)) max = bufferRU.get(i);
-            if(max < bufferRL.get(i)) max = bufferRL.get(i);
+        for (int i = 0; i < bufferLL.size(); i++) {
+            if (max < bufferLL.get(i)) max = bufferLL.get(i);
+            if (max < bufferLU.get(i)) max = bufferLU.get(i);
+            if (max < bufferRU.get(i)) max = bufferRU.get(i);
+            if (max < bufferRL.get(i)) max = bufferRL.get(i);
         }
         float gainFactor = 1.0f / max;
 
         // visualize data
-        drawBuffer(bufferLL.getBuffer(), visLeftLower, Color.BLUE, gainFactor);
-        drawBuffer(bufferLU.getBuffer(), visLeftUpper, Color.RED, gainFactor);
-        drawBuffer(bufferRU.getBuffer(), visRightUpper, Color.GREEN, gainFactor);
-        drawBuffer(bufferRL.getBuffer(), visRightLower, Color.ORANGE, gainFactor);
+        Platform.runLater(() -> {
+            drawBuffer(bufferLL.getBuffer(), visLeftLower, Color.BLUE, gainFactor);
+            drawBuffer(bufferLU.getBuffer(), visLeftUpper, Color.RED, gainFactor);
+            drawBuffer(bufferRU.getBuffer(), visRightUpper, Color.GREEN, gainFactor);
+            drawBuffer(bufferRL.getBuffer(), visRightLower, Color.ORANGE, gainFactor);
+
+            dataSetName.setText(dir.getName());
+
+            clearTable();
+        });
+    }
+
+    void clearTable()
+    {
+        GraphicsContext gc = visTable.getGraphicsContext2D();
+        gc.clearRect(0, 0, visTable.getWidth(), visTable.getHeight());
+        // draw border
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(1, 1, visTable.getWidth() - 2, visTable.getHeight() - 2);
     }
 
     void drawBuffer(float[] buffer, Canvas c, Color color)
@@ -239,7 +281,7 @@ public class AnalyzerController {
 
     LoopRingBuffer loadWave(File waveFile)
     {
-        System.out.print("loading " + waveFile.getName() + "...");
+        log("loading " + waveFile.getName() + "...");
         LoopRingBuffer lrb = null;
 
         try {
@@ -273,7 +315,10 @@ public class AnalyzerController {
 
     public void visMouse_Moved(MouseEvent event) {
         Canvas c = (Canvas)event.getSource();
-        int i = (int)(event.getX() / c.getWidth() * bufferLL.size());
-        System.out.println(event.getX() + ": " + bufferLL.get(i));
+        if(bufferLL != null) {
+            int i = (int) (event.getX() / c.getWidth() * bufferLL.size());
+            //System.out.println(event.getX() + ": " + bufferLL.get(i));
+            dataPointLabelLL.setText(String.format("%f", bufferLL.get(i)));
+        }
     }
 }
