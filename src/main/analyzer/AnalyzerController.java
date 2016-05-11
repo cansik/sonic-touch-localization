@@ -2,6 +2,7 @@ package main.analyzer;
 
 import ch.bildspur.sonic.Anaylizer;
 import ch.bildspur.sonic.LoopRingBuffer;
+import ch.bildspur.sonic.Vector2d;
 import ch.fhnw.ether.audio.IAudioRenderTarget;
 import ch.fhnw.ether.audio.JavaSoundTarget;
 import ch.fhnw.ether.audio.NullAudioTarget;
@@ -33,6 +34,9 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by cansik on 10/05/16.
@@ -119,7 +123,7 @@ public class AnalyzerController {
         double meanX = (width * topPer + width * bottomPer) / 2; //+ width * diagnoal1 + width * diagnoal2) / 4;
         double meanY = (height * rightPer + height * leftPer) / 2; // + height * diagnoal1 + height * diagnoal2) / 4;
 
-        log("Center: (" + meanX + "|" + meanY + ")");
+        log("P: (" + meanX + "|" + meanY + ")");
 
         // draw arrow
         gc.setStroke(Color.BLUE);
@@ -132,6 +136,8 @@ public class AnalyzerController {
         // draw border
         gc.setStroke(Color.BLACK);
         gc.strokeRect(1, 1, width - 2, height - 2);
+
+        analyzeResult(meanX, meanY);
     }
 
     public void btnLoad_Clicked(ActionEvent actionEvent) {
@@ -145,12 +151,46 @@ public class AnalyzerController {
         }
     }
 
-    void analyzeResult(double x, double y)
-    {
+    void analyzeResult(double x, double y) {
         double width = visTable.getWidth();
         double height = visTable.getHeight();
 
+        Vector2d prediction = new Vector2d(x, y);
 
+        // get fixpoints
+        Map<String, Vector2d> fixPoints = new HashMap<>();
+        fixPoints.put("center", new Vector2d(width / 2, height / 2));
+
+        fixPoints.put("lower left", new Vector2d(0, height));
+        fixPoints.put("upper left", new Vector2d(0, 0));
+        fixPoints.put("upper right", new Vector2d(width, 0));
+        fixPoints.put("lower right", new Vector2d(width, height));
+
+        fixPoints.put("center left", new Vector2d(0, height / 2));
+        fixPoints.put("center top", new Vector2d(width / 2, 0));
+        fixPoints.put("center right", new Vector2d(width, height / 2));
+        fixPoints.put("center bottom", new Vector2d(width / 2, height));
+
+        // anaylze
+        double minDistance = Double.MAX_VALUE;
+        String minKey = "None";
+
+        for(String key : fixPoints.keySet())
+        {
+            Vector2d v = fixPoints.get(key);
+            double distance = prediction.distance(v);
+
+            System.out.println(key + ": " + distance);
+
+            if(distance < minDistance)
+            {
+                minKey = key;
+                minDistance = distance;
+            }
+        }
+
+        // output result
+        log("Prediction: " + minKey + " (" + minDistance + ")");
     }
 
     void log(String message)
