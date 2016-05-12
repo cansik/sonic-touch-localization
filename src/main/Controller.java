@@ -52,7 +52,7 @@ public class Controller implements IGestureHandler {
     AudioGain gain;
 
     int bufferSize = 10000;
-    int thresholdSampleSize = 4000;
+    int thresholdSampleSize = 3000;
 
     LoopRingBuffer bufferLL = new LoopRingBuffer(bufferSize);
     LoopRingBuffer bufferLU = new LoopRingBuffer(bufferSize);
@@ -60,7 +60,7 @@ public class Controller implements IGestureHandler {
     LoopRingBuffer bufferRL = new LoopRingBuffer(bufferSize);
 
     boolean thresholdPassed = false;
-    int thresholdWait = 20;
+    int thresholdWait = 50;
     int thresholdTimer = 0;
 
     float[] f;
@@ -266,6 +266,9 @@ public class Controller implements IGestureHandler {
                             new LoopRingBuffer(latestLU),
                             new LoopRingBuffer(latestRU),
                             new LoopRingBuffer(latestRL));
+
+                    // call threshold analyzer
+                    Platform.runLater(() -> analyzerController.btnThreshold_Clicked(null));
                 }
             }
             thresholdTimer++;

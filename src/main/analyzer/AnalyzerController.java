@@ -269,16 +269,19 @@ public class AnalyzerController {
         // prepare params
         float sonicSpeed = 343.2f; // m/s
         float samplingRate = 44100; // hz
-        float tableLength = 2; // m
+
+        float tableLength = 1.50f; // m (iphone: 2)
+        float tableWidth = 0.75f; // m (iphone: 1)
+        float tableDiag = (float)Math.sqrt(Math.pow(tableLength, 2) + Math.pow(tableWidth, 2)); // m (iphone sqrt(5))
 
         // calculate path percentage
-        double leftPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength - 1, f, g, algorithm);
-        double rightPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength - 1, k, h, algorithm);
+        double leftPer = getPercentagePosition(sonicSpeed, samplingRate, tableWidth, f, g, algorithm);
+        double rightPer = getPercentagePosition(sonicSpeed, samplingRate, tableWidth, k, h, algorithm);
         double topPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, g, h, algorithm);
         double bottomPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, f, k, algorithm);
 
-        double diagnoal1 = getPercentagePosition(sonicSpeed, samplingRate, (float) Math.sqrt(5), f, h, algorithm);
-        double diagnoal2 = getPercentagePosition(sonicSpeed, samplingRate, (float) Math.sqrt(5), g, k, algorithm);
+        double diagnoal1 = getPercentagePosition(sonicSpeed, samplingRate, tableDiag, f, h, algorithm);
+        double diagnoal2 = getPercentagePosition(sonicSpeed, samplingRate, tableDiag, g, k, algorithm);
 
         // draw result
         GraphicsContext gc = visTable.getGraphicsContext2D();
