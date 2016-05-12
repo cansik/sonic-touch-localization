@@ -21,15 +21,17 @@
       <Canvas fx:id="visRightLower" height="60.0" layoutX="148.0" layoutY="252.0" width="597.0" />
       <ToolBar prefHeight="40.0" prefWidth="756.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
-          <Button mnemonicParsing="false" onAction="#btnLoad_Clicked" text="Load Dataset" />
             <Label fx:id="dataSetName" />
+          <Button mnemonicParsing="false" onAction="#btnLoad_Clicked" text="WAV" />
+            <Button mnemonicParsing="false" onAction="#btnLoadJSON_Clicked" text="JSON" />
+            <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
+            <Button mnemonicParsing="false" onAction="#btnSaveJSON_Clicked" text="Save" />
             <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <Label text="TDOA:" />
             <Button mnemonicParsing="false" onAction="#btnThreshold_Clicked" text="Threshold" />
             <Button mnemonicParsing="false" onAction="#btnPeek_Clicked" text="Peek" />
-            <Button mnemonicParsing="false" onAction="#btnCrossCorrelation_Clicked" text="Cross Correlation" />
-            <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
-            <Label text="LTM:" />
+            <Button mnemonicParsing="false" onAction="#btnCrossCorrelation_Clicked" text="Cross" />
+            <Button mnemonicParsing="false" onAction="#btnDavidInvertedWaveLocalization_Clicked" text="DIWL" />
             <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <ComboBox fx:id="cbAutoAlgorithm" prefWidth="150.0" />
         </items>

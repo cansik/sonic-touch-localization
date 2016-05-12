@@ -1,5 +1,6 @@
 package main.analyzer;
 
+import ch.bildspur.sonic.DIWLAlgorithm;
 import ch.bildspur.sonic.TDOAAnalyzer;
 import ch.bildspur.sonic.LoopRingBuffer;
 import ch.bildspur.sonic.Vector2d;
@@ -20,16 +21,20 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
-import javafx.util.Duration;
-import main.Controller;
+import javafx.stage.FileChooser;
 import main.Main;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
-import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 
 /**
  * Created by cansik on 10/05/16.
@@ -113,7 +118,8 @@ public class AnalyzerController {
         if (selectedDirectory == null) {
             System.out.println("No directory selected!");
         } else {
-            SwingUtilities.invokeLater(() -> loadData(selectedDirectory));
+            loadData(selectedDirectory);
+            //SwingUtilities.invokeLater(() -> loadData(selectedDirectory));
         }
     }
 
@@ -135,6 +141,14 @@ public class AnalyzerController {
         double fullTime = 1 / sonicSpeed * tableLength;
         double samplesForDistance = fullTime * samplingRate;
         double sampleWay = (samplesForDistance / 2) + delta;
+
+        System.out.print("Table length (m): " + tableLength);
+        System.out.print("\tDelta (smp): " + delta);
+        System.out.print("\tFullTime (s): " + fullTime);
+        System.out.print("\tSamples Full (smp): " + samplesForDistance);
+        System.out.print("\tSamples Way (smp): " + sampleWay);
+        System.out.println();
+
         return (sampleWay / samplesForDistance);
     }
 
@@ -300,7 +314,7 @@ public class AnalyzerController {
 
         // prepare params
         float sonicSpeed = 343.2f; // m/s
-        float samplingRate = 44100; // hz
+        float samplingRate = 96000; // hz (iphone: 44100)
 
         float tableLength = 1.50f; // m (iphone: 2)
         float tableWidth = 0.75f; // m (iphone: 1)
@@ -344,11 +358,11 @@ public class AnalyzerController {
         gc.strokeOval(width * topPer - hs, height * rightPer - hs, size, size);
 
         // right + bottom
-        gc.setStroke(Color.MAGENTA);
+        gc.setStroke(Color.ORANGE);
         gc.strokeOval(width * bottomPer - hs, height * rightPer - hs, size, size);
 
         // diagonal 1
-        gc.setStroke(Color.ORANGE);
+        gc.setStroke(Color.MAGENTA);
         gc.strokeOval(width * diagnoal1 - hs, height * diagnoal1 - hs, size, size);
 
         // diagonal 2
@@ -415,5 +429,108 @@ public class AnalyzerController {
 
         // output result
         log("Prediction: " + minKey + " (" + minDistance + ")");
+    }
+
+    public void btnLoadJSON_Clicked(ActionEvent actionEvent) {
+        // load data
+        FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON Files", "*.json");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        File selectedFile = fileChooser.showOpenDialog(((Node) actionEvent.getTarget()).getScene().getWindow());
+
+        if(selectedFile == null)
+        {
+            System.out.println("no file selected");
+            return;
+        }
+
+        JSONObject root = null;
+
+        // read file and load it into buffer
+        try {
+            String content = new String(Files.readAllBytes(selectedFile.toPath()));
+            root = (JSONObject)new JSONParser().parse(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        //read data into buffers
+        JSONObject data = (JSONObject)root.get("data");
+        JSONArray dataLL = (JSONArray)data.get("LL");
+        JSONArray dataLU = (JSONArray)data.get("LU");
+        JSONArray dataRU = (JSONArray)data.get("RU");
+        JSONArray dataRL = (JSONArray)data.get("RL");
+
+        bufferLL = new LoopRingBuffer(dataLL.size());
+        bufferLU = new LoopRingBuffer(dataLU.size());
+        bufferRU = new LoopRingBuffer(dataRU.size());
+        bufferRL = new LoopRingBuffer(dataRL.size());
+
+        for(int i = 0; i < dataLL.size(); i++)
+        {
+            bufferLL.put((float)(double)dataLL.get(i));
+            bufferLU.put((float)(double)dataLU.get(i));
+            bufferRU.put((float)(double)dataRU.get(i));
+            bufferRL.put((float)(double)dataRL.get(i));
+        }
+
+        drawAllBuffer(selectedFile.getName());
+    }
+
+    public void btnSaveJSON_Clicked(ActionEvent actionEvent) {
+        String sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+
+        // save data and algorithm results
+        JSONObject root = new JSONObject();
+        root.put("timestamp", sdf.toString());
+
+        JSONObject data = new JSONObject();
+
+        JSONArray dataLL = new JSONArray();
+        JSONArray dataLU = new JSONArray();
+        JSONArray dataRU = new JSONArray();
+        JSONArray dataRL = new JSONArray();
+
+        for(int i = 0; i < bufferLL.size(); i++)
+        {
+            dataLL.add(bufferLL.get(i));
+            dataLU.add(bufferLU.get(i));
+            dataRU.add(bufferRU.get(i));
+            dataRL.add(bufferRL.get(i));
+        }
+
+        data.put("LL", dataLL);
+        data.put("LU", dataLU);
+        data.put("RU", dataRU);
+        data.put("RL", dataRL);
+
+        root.put("data", data);
+
+        // get filename
+        TextInputDialog dialog = new TextInputDialog(cbAutoAlgorithm.getValue() + "_" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        dialog.setTitle("Experiment Name");
+        dialog.setHeaderText("To save the experiment, we need a name!");
+        dialog.setContentText("Please enter your experiment name:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> {
+            // save file to disk
+            try {
+                try (FileWriter file = new FileWriter("results/" + name + ".json")) {
+                    file.write(root.toJSONString());
+                    System.out.println("saved " + name + ".json");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void btnDavidInvertedWaveLocalization_Clicked(ActionEvent actionEvent) {
+        DIWLAlgorithm diwl = new DIWLAlgorithm();
+
     }
 }
