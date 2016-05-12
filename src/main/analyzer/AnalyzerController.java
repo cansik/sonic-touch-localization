@@ -21,6 +21,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
+import main.Main;
 
 import javax.swing.*;
 import java.io.File;
@@ -48,25 +49,213 @@ public class AnalyzerController {
     LoopRingBuffer bufferRL;
 
 
+    public void initialize() {
+        Main.analyzeController = this;
+    }
+
     public void btnThreshold_Clicked(ActionEvent actionEvent) {
         float threshold = 0.2f;
         TDOAAnalyzer an = new TDOAAnalyzer();
-        runAnalyze((a, b) -> (float)an.extendedThresholdAnalyzer(a, b, threshold));
+        runTDOAAnalyzing((a, b) -> (float) an.extendedThresholdAnalyzer(a, b, threshold));
+    }
+
+    public void btnPeek_Clicked(ActionEvent actionEvent) {
+
+    }
+
+    public void btnCrossCorrelation_Clicked(ActionEvent actionEvent) {
+        TDOAAnalyzer an = new TDOAAnalyzer();
+        //an.crossCorrelationBourke(a, b, a.length, 500)
+        runTDOAAnalyzing((a, b) -> an.execCorrelation(a, b));
     }
 
     public void btnLoad_Clicked(ActionEvent actionEvent) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(((Node)actionEvent.getTarget()).getScene().getWindow());
+        File selectedDirectory = directoryChooser.showDialog(((Node) actionEvent.getTarget()).getScene().getWindow());
 
-        if(selectedDirectory == null){
+        if (selectedDirectory == null) {
             System.out.println("No directory selected!");
-        }else{
+        } else {
             SwingUtilities.invokeLater(() -> loadData(selectedDirectory));
         }
     }
 
-    void runAnalyze(Function2<float[], float[], Float> algorithm)
+    void log(String message) {
+        Platform.runLater(() -> {
+            tbConsole.setText(tbConsole.getText() + "\n" + "> " + message);
+            tbConsole.setScrollTop(Double.MAX_VALUE);
+        });
+    }
+
+    void clearLog() {
+        Platform.runLater(() -> {
+            tbConsole.setText("Analyzer");
+        });
+    }
+
+    double getPercentagePosition(float sonicSpeed, float samplingRate, float tableLength, float[] f, float[] g, Function2<float[], float[], Float> algorithm) {
+        double delta = algorithm.apply(f, g);
+        double fullTime = 1 / sonicSpeed * tableLength;
+        double samplesForDistance = fullTime * samplingRate;
+        double sampleWay = (samplesForDistance / 2) + delta;
+        return (sampleWay / samplesForDistance);
+    }
+
+    void updateProgress(double value) {
+        Platform.runLater(() -> progressBar.setProgress(progressBar.getProgress() + value));
+    }
+
+    void resetProgress() {
+        Platform.runLater(() -> progressBar.setProgress(0));
+    }
+
+    void loadData(File dir) {
+        clearLog();
+        log("Loading dataset '" + dir.getName() + "'...");
+
+        for (File file : dir.listFiles()) {
+            if (file.getName().equals("LL.wav"))
+                bufferLL = loadWave(file);
+
+            if (file.getName().equals("LU.wav"))
+                bufferLU = loadWave(file);
+
+            if (file.getName().equals("RU.wav"))
+                bufferRU = loadWave(file);
+
+            if (file.getName().equals("RL.wav"))
+                bufferRL = loadWave(file);
+        }
+
+        // set mimium length of all
+        int min = Integer.MAX_VALUE;
+
+        if (min > bufferLL.size()) min = bufferLL.size();
+        if (min > bufferLU.size()) min = bufferLU.size();
+        if (min > bufferRU.size()) min = bufferRU.size();
+        if (min > bufferRL.size()) min = bufferRL.size();
+
+        // resize arrays
+        bufferLL = new LoopRingBuffer(bufferLL, min);
+        bufferLU = new LoopRingBuffer(bufferLU, min);
+        bufferRU = new LoopRingBuffer(bufferRU, min);
+        bufferRL = new LoopRingBuffer(bufferRL, min);
+
+        drawAllBuffer(dir.getName());
+    }
+
+    void drawAllBuffer(String dataSet)
     {
+        float max = 0;
+        for (int i = 0; i < bufferLL.size(); i++) {
+            if (max < bufferLL.get(i)) max = bufferLL.get(i);
+            if (max < bufferLU.get(i)) max = bufferLU.get(i);
+            if (max < bufferRU.get(i)) max = bufferRU.get(i);
+            if (max < bufferRL.get(i)) max = bufferRL.get(i);
+        }
+        float gainFactor = 1.0f / max;
+
+        // visualize data
+        Platform.runLater(() -> {
+            drawBuffer(bufferLL.getBuffer(), visLeftLower, Color.BLUE, gainFactor);
+            drawBuffer(bufferLU.getBuffer(), visLeftUpper, Color.RED, gainFactor);
+            drawBuffer(bufferRU.getBuffer(), visRightUpper, Color.GREEN, gainFactor);
+            drawBuffer(bufferRL.getBuffer(), visRightLower, Color.ORANGE, gainFactor);
+
+            dataSetName.setText(dataSet);
+
+            clearTable();
+        });
+    }
+
+    void clearTable() {
+        GraphicsContext gc = visTable.getGraphicsContext2D();
+        gc.clearRect(0, 0, visTable.getWidth(), visTable.getHeight());
+        // draw border
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(1, 1, visTable.getWidth() - 2, visTable.getHeight() - 2);
+    }
+
+    void drawBuffer(float[] buffer, Canvas c, Color color) {
+        drawBuffer(buffer, c, color, 1.0f);
+    }
+
+    void drawBuffer(float[] buffer, Canvas c, Color color, float gainFactor) {
+        GraphicsContext gc = c.getGraphicsContext2D();
+        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+        float space = (float) (c.getWidth() / buffer.length);
+
+        gc.setFill(color);
+
+        float y = (float) c.getHeight() / 2f;
+
+        for (int i = 0; i < buffer.length - 1; i++) {
+            float v = buffer[i];
+
+            gc.fillOval(space * i, y + (y * v * gainFactor), 1, 1);
+        }
+
+        // draw border
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(1, 1, c.getWidth() - 2, c.getHeight() - 2);
+    }
+
+    LoopRingBuffer loadWave(File waveFile) {
+        log("loading " + waveFile.getName() + "...");
+        LoopRingBuffer lrb = null;
+
+        try {
+            // create source
+            URLAudioSource source = new URLAudioSource(waveFile.toURL(), 1);
+            long time = (long) Math.ceil(source.getLengthInSeconds() * 1000);
+            AudioBufferReader bufferReader = new AudioBufferReader();
+            RenderProgram<IAudioRenderTarget> program = new RenderProgram<>(source, bufferReader);
+
+            // run audio
+            IAudioRenderTarget target = new JavaSoundTarget();
+            target.useProgram(program);
+
+            target.start();
+            target.sleepUntil(IScheduler.NOT_RENDERING);
+            target.stop();
+
+            //read buffer
+            lrb = new LoopRingBuffer(bufferReader.getBuffer());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (RenderCommandException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("loaded!");
+
+        return lrb;
+    }
+
+    public void loadBuffer(LoopRingBuffer bufferLL, LoopRingBuffer bufferLU, LoopRingBuffer bufferRU, LoopRingBuffer bufferRL) {
+        // todo: maybe memory overwrite problem
+        this.bufferLL = bufferLL;
+        this.bufferLU = bufferLU;
+        this.bufferRU = bufferRU;
+        this.bufferRL = bufferRL;
+
+        log("loaded live input buffer (" + bufferLL.size() + ")");
+
+        // draw visualisation
+        drawAllBuffer("LIVE");
+    }
+
+    public void visMouse_Moved(MouseEvent event) {
+        Canvas c = (Canvas) event.getSource();
+        if (bufferLL != null) {
+            int i = (int) (event.getX() / c.getWidth() * bufferLL.size());
+            //System.out.println(event.getX() + ": " + bufferLL.get(i));
+            dataPointLabelLL.setText(String.format("%f", bufferLL.get(i)));
+        }
+    }
+
+    void runTDOAAnalyzing(Function2<float[], float[], Float> algorithm) {
         float[] f = bufferLL.getBuffer();
         float[] g = bufferLU.getBuffer();
         float[] h = bufferRU.getBuffer();
@@ -83,8 +272,8 @@ public class AnalyzerController {
         double topPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, g, h, algorithm);
         double bottomPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, f, k, algorithm);
 
-        double diagnoal1 = getPercentagePosition(sonicSpeed, samplingRate, (float)Math.sqrt(5), f, h, algorithm);
-        double diagnoal2 = getPercentagePosition(sonicSpeed, samplingRate, (float)Math.sqrt(5), g, k, algorithm);
+        double diagnoal1 = getPercentagePosition(sonicSpeed, samplingRate, (float) Math.sqrt(5), f, h, algorithm);
+        double diagnoal2 = getPercentagePosition(sonicSpeed, samplingRate, (float) Math.sqrt(5), g, k, algorithm);
 
         // draw result
         GraphicsContext gc = visTable.getGraphicsContext2D();
@@ -171,15 +360,14 @@ public class AnalyzerController {
         double minDistance = Double.MAX_VALUE;
         String minKey = "None";
 
-        for(String key : fixPoints.keySet())
-        {
+        System.out.println("---");
+        for (String key : fixPoints.keySet()) {
             Vector2d v = fixPoints.get(key);
             double distance = prediction.distance(v);
 
             System.out.println(key + ": " + distance);
 
-            if(distance < minDistance)
-            {
+            if (distance < minDistance) {
                 minKey = key;
                 minDistance = distance;
             }
@@ -187,173 +375,5 @@ public class AnalyzerController {
 
         // output result
         log("Prediction: " + minKey + " (" + minDistance + ")");
-    }
-
-    void log(String message)
-    {
-        Platform.runLater ( () -> {
-            tbConsole.setText(tbConsole.getText() + "\n" + "> " + message);
-            tbConsole.setScrollTop(Double.MAX_VALUE);
-        });
-    }
-
-    void clearLog()
-    {
-        Platform.runLater ( () -> {
-            tbConsole.setText("Analyzer");
-        });
-    }
-
-    double getPercentagePosition(float sonicSpeed, float samplingRate, float tableLength, float[] f, float[] g, Function2<float[], float[], Float> algorithm)
-    {
-        double delta = algorithm.apply(f, g);
-        double fullTime = 1/sonicSpeed*tableLength;
-        double samplesForDistance = fullTime * samplingRate;
-        double sampleWay = (samplesForDistance / 2) + delta;
-        return (sampleWay / samplesForDistance);
-    }
-
-    void updateProgress(double value)
-    {
-        Platform.runLater(() -> progressBar.setProgress(progressBar.getProgress() + value));
-    }
-
-    void resetProgress()
-    {
-        Platform.runLater(() -> progressBar.setProgress(0));
-    }
-
-    void loadData(File dir) {
-        clearLog();
-        log("Loading dataset '" + dir.getName() + "'...");
-
-        for (File file : dir.listFiles()) {
-            if (file.getName().equals("LL.wav"))
-                bufferLL = loadWave(file);
-
-            if (file.getName().equals("LU.wav"))
-                bufferLU = loadWave(file);
-
-            if (file.getName().equals("RU.wav"))
-                bufferRU = loadWave(file);
-
-            if (file.getName().equals("RL.wav"))
-                bufferRL = loadWave(file);
-        }
-
-        // set mimium length of all
-        int min = Integer.MAX_VALUE;
-
-        if (min > bufferLL.size()) min = bufferLL.size();
-        if (min > bufferLU.size()) min = bufferLU.size();
-        if (min > bufferRU.size()) min = bufferRU.size();
-        if (min > bufferRL.size()) min = bufferRL.size();
-
-        // resize arrays
-        bufferLL = new LoopRingBuffer(bufferLL, min);
-        bufferLU = new LoopRingBuffer(bufferLU, min);
-        bufferRU = new LoopRingBuffer(bufferRU, min);
-        bufferRL = new LoopRingBuffer(bufferRL, min);
-
-        //calculate size factor for normalisation
-        float max = 0;
-        for (int i = 0; i < bufferLL.size(); i++) {
-            if (max < bufferLL.get(i)) max = bufferLL.get(i);
-            if (max < bufferLU.get(i)) max = bufferLU.get(i);
-            if (max < bufferRU.get(i)) max = bufferRU.get(i);
-            if (max < bufferRL.get(i)) max = bufferRL.get(i);
-        }
-        float gainFactor = 1.0f / max;
-
-        // visualize data
-        Platform.runLater(() -> {
-            drawBuffer(bufferLL.getBuffer(), visLeftLower, Color.BLUE, gainFactor);
-            drawBuffer(bufferLU.getBuffer(), visLeftUpper, Color.RED, gainFactor);
-            drawBuffer(bufferRU.getBuffer(), visRightUpper, Color.GREEN, gainFactor);
-            drawBuffer(bufferRL.getBuffer(), visRightLower, Color.ORANGE, gainFactor);
-
-            dataSetName.setText(dir.getName());
-
-            clearTable();
-        });
-    }
-
-    void clearTable()
-    {
-        GraphicsContext gc = visTable.getGraphicsContext2D();
-        gc.clearRect(0, 0, visTable.getWidth(), visTable.getHeight());
-        // draw border
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(1, 1, visTable.getWidth() - 2, visTable.getHeight() - 2);
-    }
-
-    void drawBuffer(float[] buffer, Canvas c, Color color)
-    {
-        drawBuffer(buffer, c, color, 1.0f);
-    }
-
-    void drawBuffer(float[] buffer, Canvas c, Color color, float gainFactor)
-    {
-        GraphicsContext gc = c.getGraphicsContext2D();
-        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
-        float space = (float)(c.getWidth() / buffer.length);
-
-        gc.setFill(color);
-
-        float y = (float)c.getHeight() / 2f;
-
-        for(int i = 0; i < buffer.length - 1; i++)
-        {
-            float v = buffer[i];
-
-            gc.fillOval(space * i, y + (y * v * gainFactor), 1, 1);
-        }
-
-        // draw border
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(1, 1, c.getWidth() - 2, c.getHeight() - 2);
-    }
-
-    LoopRingBuffer loadWave(File waveFile)
-    {
-        log("loading " + waveFile.getName() + "...");
-        LoopRingBuffer lrb = null;
-
-        try {
-            // create source
-            URLAudioSource source = new URLAudioSource(waveFile.toURL(), 1);
-            long time = (long) Math.ceil(source.getLengthInSeconds() * 1000);
-            AudioBufferReader bufferReader = new AudioBufferReader();
-            RenderProgram<IAudioRenderTarget> program = new RenderProgram<>(source, bufferReader);
-
-            // run audio
-            IAudioRenderTarget target = new JavaSoundTarget();
-            target.useProgram(program);
-
-            target.start();
-            target.sleepUntil(IScheduler.NOT_RENDERING);
-            target.stop();
-
-            //read buffer
-            lrb = new LoopRingBuffer(bufferReader.getBuffer());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (RenderCommandException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("loaded!");
-
-        return lrb;
-    }
-
-    public void visMouse_Moved(MouseEvent event) {
-        Canvas c = (Canvas)event.getSource();
-        if(bufferLL != null) {
-            int i = (int) (event.getX() / c.getWidth() * bufferLL.size());
-            //System.out.println(event.getX() + ": " + bufferLL.get(i));
-            dataPointLabelLL.setText(String.format("%f", bufferLL.get(i)));
-        }
     }
 }

@@ -8,9 +8,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import main.analyzer.AnalyzerController;
 
 import javax.swing.*;
 import java.util.Arrays;
@@ -42,6 +44,7 @@ public class Controller implements IGestureHandler {
     public Slider sliderAmp;
     public Canvas visTable;
     public Canvas visLevels;
+    public CheckBox cbSendToAnalyzer;
 
     JavaSoundSource source;
 
@@ -61,6 +64,8 @@ public class Controller implements IGestureHandler {
 
     float[] f;
     float[] g;
+
+    AnalyzerController analyzerController;
 
     public void initialize()
     {
@@ -83,6 +88,8 @@ public class Controller implements IGestureHandler {
         System.out.println("draw visualisation");
         //drawTableVisualisation();
 
+        analyzerController = Main.analyzeController;
+
         String[] sources = AudioUtils.getSources();
         System.out.println(Arrays.toString(sources));
 
@@ -90,7 +97,7 @@ public class Controller implements IGestureHandler {
         source = new JavaSoundSource(8, 96000, 256);
 
         // 2 channel
-        //source = new JavaSoundSource(2, 96000, 256*2);
+        //source = new JavaSoundSource(2, 96000, 256);
 
         levels = new Levels();
         gain = new AudioGain();
@@ -224,6 +231,11 @@ public class Controller implements IGestureHandler {
 
                 // do analyzing
                 doAnalyze();
+
+                if(cbSendToAnalyzer.isSelected())
+                {
+                    analyzerController.loadBuffer(bufferLeft, bufferLeft, bufferRight, bufferRight);
+                }
             }
             thresholdTimer++;
         }

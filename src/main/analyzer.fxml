@@ -26,7 +26,8 @@
             <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <Label text="TDOA:" />
             <Button mnemonicParsing="false" onAction="#btnThreshold_Clicked" text="Threshold" />
-            <Button mnemonicParsing="false" text="Cross Correlation" />
+            <Button mnemonicParsing="false" onAction="#btnPeek_Clicked" text="Peek" />
+            <Button mnemonicParsing="false" onAction="#btnCrossCorrelation_Clicked" text="Cross Correlation" />
             <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <Label text="LTM:" />
         </items>

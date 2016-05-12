@@ -15,6 +15,7 @@
           <Button mnemonicParsing="false" onAction="#btnTest_clicked" text="Record" />
             <Button mnemonicParsing="false" onAction="#btnSave_clicked" text="Save" />
             <Button mnemonicParsing="false" onAction="#btnDetect_clicked" text="Detect" />
+            <CheckBox fx:id="cbSendToAnalyzer" mnemonicParsing="false" text="Send To Analyzer" />
         </items>
       </ToolBar>
       <VBox layoutY="39.0" prefHeight="572.0" prefWidth="201.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0">
