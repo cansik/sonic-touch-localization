@@ -30,6 +30,8 @@
             <Button mnemonicParsing="false" onAction="#btnCrossCorrelation_Clicked" text="Cross Correlation" />
             <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <Label text="LTM:" />
+            <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
+            <ComboBox fx:id="cbAutoAlgorithm" prefWidth="150.0" />
         </items>
       </ToolBar>
       <Canvas fx:id="visTable" height="172.0" layoutX="152.0" layoutY="373.0" width="300.0" />

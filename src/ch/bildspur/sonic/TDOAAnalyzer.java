@@ -222,4 +222,33 @@ public class TDOAAnalyzer {
 
         return passPointF - passPointG;
     }
+
+    public int peekAnalyzer(float[] f, float[] g)
+    {
+        int maxPosF = -1;
+        int maxPosG = -1;
+
+        float maxValueF = 0;
+        float maxValueG = 0;
+
+        for(int i = 0; i < f.length; i++)
+        {
+            float absF = Math.abs(f[i]);
+            float absG = Math.abs(g[i]);
+
+            if(absF > maxValueF)
+            {
+                maxValueF = absF;
+                maxPosF = i;
+            }
+
+            if(absG > maxValueG)
+            {
+                maxValueG = absG;
+                maxPosG = i;
+            }
+        }
+
+        return maxPosF - maxPosG;
+    }
 }

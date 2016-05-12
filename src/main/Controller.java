@@ -10,6 +10,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import main.analyzer.AnalyzerController;
@@ -44,6 +45,8 @@ public class Controller implements IGestureHandler {
     public Canvas visTable;
     public Canvas visLevels;
     public CheckBox cbSendToAnalyzer;
+    public TextField tbThresholdValue;
+    public TextField tbGainValue;
 
     JavaSoundSource source;
 
@@ -74,6 +77,7 @@ public class Controller implements IGestureHandler {
 
         sliderThreshold.valueProperty().addListener((observable, oldValue, newValue) -> {
             gr.setThreshold(newValue.floatValue());
+            tbThresholdValue.setText(String.format("%f", newValue.floatValue()));
         });
 
         sliderAmp.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -89,6 +93,7 @@ public class Controller implements IGestureHandler {
     {
         gain.setVal("gain", value);
         gr.setGain(value);
+        tbGainValue.setText(String.format("%f", value));
     }
 
     public void btnTest_clicked(ActionEvent actionEvent) {
@@ -268,7 +273,7 @@ public class Controller implements IGestureHandler {
                             new LoopRingBuffer(latestRL));
 
                     // call threshold analyzer
-                    Platform.runLater(() -> analyzerController.btnThreshold_Clicked(null));
+                    Platform.runLater(() -> analyzerController.runAutoAlgorithm());
                 }
             }
             thresholdTimer++;

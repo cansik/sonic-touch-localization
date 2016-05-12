@@ -10,17 +10,17 @@ import ch.fhnw.ether.media.IScheduler;
 import ch.fhnw.ether.media.RenderCommandException;
 import ch.fhnw.ether.media.RenderProgram;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
+import javafx.util.Duration;
 import main.Controller;
 import main.Main;
 
@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Created by cansik on 10/05/16.
@@ -43,16 +44,46 @@ public class AnalyzerController {
     public Label dataSetName;
     public TextField dataPointLabelLL;
     public TextArea tbConsole;
+    public ComboBox cbAutoAlgorithm;
 
     LoopRingBuffer bufferLL;
     LoopRingBuffer bufferLU;
     LoopRingBuffer bufferRU;
     LoopRingBuffer bufferRL;
 
+    ObservableList<String> algorithms;
+
     public void initialize() {
         Main.analyzeController = this;
         clearLog();
         clearTable();
+
+        algorithms = FXCollections.observableArrayList();
+
+        // add algorithms
+        algorithms.add("threshold");
+        algorithms.add("peek");
+        algorithms.add("cross-correlation");
+
+        cbAutoAlgorithm.setItems(algorithms);
+        cbAutoAlgorithm.setValue(algorithms.get(0));
+    }
+
+    public void runAutoAlgorithm()
+    {
+        String algo = (String)cbAutoAlgorithm.getValue();
+        switch (algo)
+        {
+            case "threshold":
+                btnThreshold_Clicked(null);
+                break;
+            case "peek":
+                btnPeek_Clicked(null);
+                break;
+            case "cross-correlation":
+                btnCrossCorrelation_Clicked(null);
+                break;
+        }
     }
 
     public void btnThreshold_Clicked(ActionEvent actionEvent) {
@@ -65,7 +96,8 @@ public class AnalyzerController {
     }
 
     public void btnPeek_Clicked(ActionEvent actionEvent) {
-
+        TDOAAnalyzer an = new TDOAAnalyzer();
+        runTDOAAnalyzing((a, b) -> (float)an.peekAnalyzer(a, b));
     }
 
     public void btnCrossCorrelation_Clicked(ActionEvent actionEvent) {
