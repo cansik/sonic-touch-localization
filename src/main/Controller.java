@@ -31,11 +31,10 @@ public class Controller implements IGestureHandler {
     @FXML
     public Canvas visCanvasChannel4;
 
-    @FXML
-    public Canvas visBufferLeft;
-
-    @FXML
-    public Canvas visBufferRight;
+    public Canvas visBufferLL;
+    public Canvas visBufferLU;
+    public Canvas visBufferRU;
+    public Canvas visBufferRL;
 
     public Circle circleThresholdPassed;
     public Slider sliderThreshold;
@@ -53,10 +52,12 @@ public class Controller implements IGestureHandler {
     AudioGain gain;
 
     int bufferSize = 10000;
-    int sampleSize = 4000;
+    int thresholdSampleSize = 4000;
 
-    LoopRingBuffer bufferLeft = new LoopRingBuffer(bufferSize);
-    LoopRingBuffer bufferRight = new LoopRingBuffer(bufferSize);
+    LoopRingBuffer bufferLL = new LoopRingBuffer(bufferSize);
+    LoopRingBuffer bufferLU = new LoopRingBuffer(bufferSize);
+    LoopRingBuffer bufferRU = new LoopRingBuffer(bufferSize);
+    LoopRingBuffer bufferRL = new LoopRingBuffer(bufferSize);
 
     boolean thresholdPassed = false;
     int thresholdWait = 20;
@@ -69,6 +70,8 @@ public class Controller implements IGestureHandler {
 
     public void initialize()
     {
+        Main.inputController = this;
+
         sliderThreshold.valueProperty().addListener((observable, oldValue, newValue) -> {
             gr.setThreshold(newValue.floatValue());
         });
@@ -76,6 +79,10 @@ public class Controller implements IGestureHandler {
         sliderAmp.valueProperty().addListener((observable, oldValue, newValue) -> {
             setGain(newValue.floatValue());
         });
+    }
+
+    public GestureRecognizer getGestureRecognizer() {
+        return gr;
     }
 
     public void setGain(float value)
@@ -207,19 +214,31 @@ public class Controller implements IGestureHandler {
 
     @Override
     public void bufferReceived(float[][] channels) {
-        float[] c1 = Arrays.copyOf(channels[0], channels[0].length);
-        float[] c2 = Arrays.copyOf(channels[1], channels[1].length);
+        //float[] c1 = Arrays.copyOf(channels[0], channels[0].length);
+        //float[] c2 = Arrays.copyOf(channels[1], channels[1].length);
 
-        // just some buffer test
-        bufferLeft.put(c1);
-        bufferRight.put(c2);
+        float[] cLL = channels[0];
+        float[] cLU = channels[1];
+        float[] cRU = channels[2];
+        float[] cRL = channels[3];
 
-        Platform.runLater(() -> drawBuffer(c1, visCanvasChannel1, Color.BLUE, false, -1));
-        Platform.runLater(() -> drawBuffer(c2, visCanvasChannel2, Color.RED, false, -1));
+        // add samples to long buffer
+        bufferLL.put(cLL);
+        bufferLU.put(cLU);
+        bufferRU.put(cRU);
+        bufferRL.put(cRL);
 
-        // draw full buffer
-        Platform.runLater(() -> drawBuffer(bufferLeft.getBuffer(), visBufferLeft, Color.BLUE, true, bufferLeft.getPosition()));
-        Platform.runLater(() -> drawBuffer(bufferRight.getBuffer(), visBufferRight, Color.RED, true, bufferLeft.getPosition()));
+        // draw current channel
+        Platform.runLater(() -> drawBuffer(cLL, visCanvasChannel1, Color.BLUE, false, -1));
+        Platform.runLater(() -> drawBuffer(cLU, visCanvasChannel2, Color.RED, false, -1));
+        Platform.runLater(() -> drawBuffer(cRU, visCanvasChannel3, Color.GREEN, false, -1));
+        Platform.runLater(() -> drawBuffer(cRL, visCanvasChannel4, Color.ORANGE, false, -1));
+
+        // draw long buffer
+        Platform.runLater(() -> drawBuffer(bufferLL.getBuffer(), visBufferLL, Color.BLUE, true, bufferLL.getPosition()));
+        Platform.runLater(() -> drawBuffer(bufferLU.getBuffer(), visBufferLU, Color.RED, true, bufferLU.getPosition()));
+        Platform.runLater(() -> drawBuffer(bufferRU.getBuffer(), visBufferRU, Color.GREEN, true, bufferRU.getPosition()));
+        Platform.runLater(() -> drawBuffer(bufferRL.getBuffer(), visBufferRL, Color.ORANGE, true, bufferRL.getPosition()));
 
         //threshold
         if(thresholdPassed)
@@ -234,25 +253,31 @@ public class Controller implements IGestureHandler {
 
                 if(cbSendToAnalyzer.isSelected())
                 {
-                    analyzerController.loadBuffer(bufferLeft, bufferLeft, bufferRight, bufferRight);
+                    // grab latest buffer - samples
+
+                    float[] latestLL = bufferLL.getLatest(thresholdSampleSize);
+                    float[] latestLU = bufferLU.getLatest(thresholdSampleSize);
+                    float[] latestRU = bufferRU.getLatest(thresholdSampleSize);
+                    float[] latestRL = bufferRL.getLatest(thresholdSampleSize);
+
+                    // send to analyzer
+                    analyzerController.loadBuffer(
+                            new LoopRingBuffer(latestLL),
+                            new LoopRingBuffer(latestLU),
+                            new LoopRingBuffer(latestRU),
+                            new LoopRingBuffer(latestRL));
                 }
             }
             thresholdTimer++;
         }
-
-
-        float[] c3 = Arrays.copyOf(channels[2], channels[2].length);
-        float[] c4 = Arrays.copyOf(channels[3], channels[3].length);
-        Platform.runLater(() -> drawBuffer(c3, visCanvasChannel3, Color.GREEN, false, -1));
-        Platform.runLater(() -> drawBuffer(c4, visCanvasChannel4, Color.ORANGE, false, -1));
 
         Platform.runLater(this::drawLevels);
     }
 
     private void doAnalyze()
     {
-        f = bufferLeft.getLatest(sampleSize);
-        g = bufferRight.getLatest(sampleSize);
+        f = bufferLL.getLatest(thresholdSampleSize);
+        g = bufferLU.getLatest(thresholdSampleSize);
 
         Platform.runLater(() -> drawBuffer(f, visAnalyzing, Color.CYAN, true, -1));
         Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true, -1));
@@ -334,8 +359,8 @@ public class Controller implements IGestureHandler {
 
     public void saveAllBuffer()
     {
-        bufferLeft.saveBuffer("data/plot1.data");
-        bufferRight.saveBuffer("data/plot2.data");
+        bufferLL.saveBuffer("data/plot1.data");
+        bufferLU.saveBuffer("data/plot2.data");
 
         System.out.println("buffer saved!");
     }
@@ -351,5 +376,9 @@ public class Controller implements IGestureHandler {
         flrb.saveBuffer("data/g_buffer.txt");
 
         System.out.println("buffer saved!");
+    }
+
+    public void btnExit_Clicked(ActionEvent actionEvent) {
+        Platform.exit();
     }
 }

@@ -11,6 +11,8 @@ public class Main extends Application {
 
     public static AnalyzerController analyzeController = null;
 
+    public static Controller inputController = null;
+
     @Override
     public void start(Stage primaryStage) throws Exception{
 

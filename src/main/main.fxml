@@ -16,6 +16,11 @@
             <Button mnemonicParsing="false" onAction="#btnSave_clicked" text="Save" />
             <Button mnemonicParsing="false" onAction="#btnDetect_clicked" text="Detect" />
             <CheckBox fx:id="cbSendToAnalyzer" mnemonicParsing="false" text="Send To Analyzer" />
+            <Button mnemonicParsing="false" onAction="#btnExit_Clicked" text="Exit">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+            </Button>
         </items>
       </ToolBar>
       <VBox layoutY="39.0" prefHeight="572.0" prefWidth="201.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0">
@@ -27,20 +32,22 @@
             <Canvas fx:id="visLevels" height="200.0" width="200.0" />
          </children>
       </VBox>
-      <AnchorPane layoutX="201.0" layoutY="40.0" prefHeight="377.0" prefWidth="555.0" AnchorPane.leftAnchor="201.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+      <AnchorPane layoutX="201.0" layoutY="40.0" prefHeight="507.0" prefWidth="555.0" AnchorPane.leftAnchor="201.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
          <children>
-            <Circle fx:id="circleThresholdPassed" fill="WHITE" layoutX="155.0" layoutY="163.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" AnchorPane.leftAnchor="143.0" AnchorPane.topAnchor="151.0" />
-            <Slider fx:id="sliderThreshold" blockIncrement="0.1" layoutX="192.0" layoutY="155.0" majorTickUnit="0.1" max="1.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" AnchorPane.leftAnchor="192.0" AnchorPane.rightAnchor="17.0" AnchorPane.topAnchor="155.0" />
-            <Label layoutX="18.0" layoutY="154.0" text="Threshold Passed:" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="154.0" />
-            <Canvas fx:id="visAnalyzingRight" height="71.0" layoutY="262.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-            <Canvas fx:id="visAnalyzing" height="71.0" layoutY="191.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="191.0" />
-            <Canvas fx:id="visBufferLeft" height="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-            <Canvas fx:id="visBufferRight" height="70.0" layoutY="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0" />
-            <Slider fx:id="sliderAmp" layoutX="155.0" layoutY="341.0" majorTickUnit="10.0" max="500.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" />
-            <Label layoutX="24.0" layoutY="341.0" text="Digital Amp:" />
+            <Circle fx:id="circleThresholdPassed" fill="WHITE" layoutX="155.0" layoutY="300.0" radius="12.0" stroke="BLACK" strokeType="INSIDE" AnchorPane.leftAnchor="143.0" AnchorPane.topAnchor="288.0" />
+            <Slider fx:id="sliderThreshold" blockIncrement="0.1" layoutX="192.0" layoutY="292.0" majorTickUnit="0.1" max="1.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" AnchorPane.leftAnchor="192.0" AnchorPane.rightAnchor="17.0" AnchorPane.topAnchor="292.0" />
+            <Label layoutX="18.0" layoutY="291.0" text="Threshold Passed:" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="291.0" />
+            <Canvas fx:id="visAnalyzingRight" height="71.0" layoutY="436.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+            <Canvas fx:id="visAnalyzing" height="71.0" layoutY="365.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="365.0" />
+            <Canvas fx:id="visBufferLL" height="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <Canvas fx:id="visBufferLU" height="70.0" layoutY="70.0" width="555.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0" />
+            <Canvas fx:id="visBufferRU" height="70.0" layoutY="140.0" width="555.0" />
+            <Canvas fx:id="visBufferRL" height="70.0" layoutY="210.0" width="555.0" />
          </children>
       </AnchorPane>
-      <Label layoutX="229.0" layoutY="435.0" text="Result:" AnchorPane.leftAnchor="229.0" AnchorPane.topAnchor="435.0" />
-      <Canvas fx:id="visTable" height="149.0" layoutX="284.0" layoutY="435.0" width="452.0" AnchorPane.bottomAnchor="28.0" AnchorPane.leftAnchor="284.0" AnchorPane.rightAnchor="20.0" />
+      <Label layoutX="224.0" layoutY="558.0" text="Result:" AnchorPane.leftAnchor="224.0" AnchorPane.topAnchor="558.0" />
+      <Canvas fx:id="visTable" height="50.0" layoutX="278.0" layoutY="553.0" width="100.0" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="278.0" AnchorPane.rightAnchor="378.0" />
+      <Slider fx:id="sliderAmp" layoutX="388.0" layoutY="578.0" majorTickUnit="10.0" max="500.0" prefHeight="16.0" prefWidth="346.0" showTickLabels="true" showTickMarks="true" />
+      <Label layoutX="393.0" layoutY="549.0" text="Digital Amp:" />
    </children>
 </AnchorPane>

@@ -21,6 +21,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
+import main.Controller;
 import main.Main;
 
 import javax.swing.*;
@@ -48,13 +49,17 @@ public class AnalyzerController {
     LoopRingBuffer bufferRU;
     LoopRingBuffer bufferRL;
 
-
     public void initialize() {
         Main.analyzeController = this;
+        clearLog();
+        clearTable();
     }
 
     public void btnThreshold_Clicked(ActionEvent actionEvent) {
-        float threshold = 0.2f;
+        float threshold = Main.inputController.getGestureRecognizer().getThreshold();
+        //if(Main.inputController != null)
+            //threshold = Main.inputController.getGestureRecognizer().getThreshold();
+
         TDOAAnalyzer an = new TDOAAnalyzer();
         runTDOAAnalyzing((a, b) -> (float) an.extendedThresholdAnalyzer(a, b, threshold));
     }
