@@ -6,6 +6,8 @@ import main.analyzer.Function2;
  * Created by cansik on 12/05/16.
  */
 public class DIWLAlgorithm {
+    public static float SONIC_SPEED = 343.2f; // m/s
+    public static float SAMPLING_RATE = 96000; // hz
 
     Function2<float[], float[], Double> distanceMethod;
 

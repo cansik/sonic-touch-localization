@@ -34,6 +34,7 @@
             <Button mnemonicParsing="false" onAction="#btnDavidInvertedWaveLocalization_Clicked" text="DIWL" />
             <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <ComboBox fx:id="cbAutoAlgorithm" prefWidth="150.0" />
+            <Button mnemonicParsing="false" onAction="#btnRunAlgo_Clicked" text="Run" />
         </items>
       </ToolBar>
       <Canvas fx:id="visTable" height="172.0" layoutX="152.0" layoutY="373.0" width="300.0" />

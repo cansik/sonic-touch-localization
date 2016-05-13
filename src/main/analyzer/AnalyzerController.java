@@ -1,9 +1,6 @@
 package main.analyzer;
 
-import ch.bildspur.sonic.DIWLAlgorithm;
-import ch.bildspur.sonic.TDOAAnalyzer;
-import ch.bildspur.sonic.LoopRingBuffer;
-import ch.bildspur.sonic.Vector2d;
+import ch.bildspur.sonic.*;
 import ch.fhnw.ether.audio.IAudioRenderTarget;
 import ch.fhnw.ether.audio.JavaSoundTarget;
 import ch.fhnw.ether.audio.URLAudioSource;
@@ -69,6 +66,7 @@ public class AnalyzerController {
         algorithms.add("threshold");
         algorithms.add("peek");
         algorithms.add("cross-correlation");
+        algorithms.add("diagonal");
 
         cbAutoAlgorithm.setItems(algorithms);
         cbAutoAlgorithm.setValue(algorithms.get(0));
@@ -88,7 +86,38 @@ public class AnalyzerController {
             case "cross-correlation":
                 btnCrossCorrelation_Clicked(null);
                 break;
+            case "diagonal":
+                runDiagonal();
+                break;
         }
+    }
+
+    public void runDiagonal()
+    {
+        DiagonalTDAO diag = new DiagonalTDAO();
+        TDOAAnalyzer an = new TDOAAnalyzer();
+
+        diag.delayAlgorithm = an::execCorrelation;
+
+        diag.ll = bufferLL.getBuffer();
+        diag.ul = bufferLU.getBuffer();
+        diag.ur = bufferRU.getBuffer();
+        diag.lr = bufferRL.getBuffer();
+
+        diag.tableLength = 1.5;
+        diag.tableWidth = 0.5;
+
+        diag.canvas = visTable;
+
+        diag.run();
+
+        // draw center
+        GraphicsContext gc = visTable.getGraphicsContext2D();
+        // draw grid
+        gc.setStroke(Color.DARKGRAY);
+        gc.strokeLine(visTable.getWidth() / 2, 0, visTable.getWidth() / 2, visTable.getHeight());
+        gc.strokeLine(0, visTable.getHeight() / 2, visTable.getWidth(), visTable.getHeight() / 2);
+
     }
 
     public void btnThreshold_Clicked(ActionEvent actionEvent) {
@@ -457,6 +486,12 @@ public class AnalyzerController {
             e.printStackTrace();
         }
 
+        System.out.println("Gain: " + (float)(double)root.get("gain"));
+        System.out.println("Threshold: " + (float)(double)root.get("threshold"));
+
+        Main.inputController.setGain((float)(double)root.get("gain"));
+        Main.inputController.getGestureRecognizer().setThreshold((float)(double)root.get("threshold"));
+
         //read data into buffers
         JSONObject data = (JSONObject)root.get("data");
         JSONArray dataLL = (JSONArray)data.get("LL");
@@ -486,6 +521,8 @@ public class AnalyzerController {
         // save data and algorithm results
         JSONObject root = new JSONObject();
         root.put("timestamp", sdf.toString());
+        root.put("gain", Main.inputController.getGestureRecognizer().getGain());
+        root.put("threshold", Main.inputController.getGestureRecognizer().getThreshold());
 
         JSONObject data = new JSONObject();
 
@@ -532,5 +569,10 @@ public class AnalyzerController {
     public void btnDavidInvertedWaveLocalization_Clicked(ActionEvent actionEvent) {
         DIWLAlgorithm diwl = new DIWLAlgorithm();
 
+    }
+
+
+    public void btnRunAlgo_Clicked(ActionEvent actionEvent) {
+        Platform.runLater(() -> runAutoAlgorithm());
     }
 }
