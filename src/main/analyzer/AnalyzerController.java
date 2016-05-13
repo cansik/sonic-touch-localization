@@ -498,12 +498,6 @@ public class AnalyzerController {
         });
     }
 
-    public void btnDavidInvertedWaveLocalization_Clicked(ActionEvent actionEvent) {
-        DIWLAlgorithm diwl = new DIWLAlgorithm();
-
-    }
-
-
     public void btnRunAlgo_Clicked(ActionEvent actionEvent) {
         Platform.runLater(() -> runAutoAlgorithm());
     }
