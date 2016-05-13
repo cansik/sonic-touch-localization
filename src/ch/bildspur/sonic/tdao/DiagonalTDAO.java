@@ -1,30 +1,16 @@
-package ch.bildspur.sonic;
+package ch.bildspur.sonic.tdao;
 
 import ch.bildspur.sonic.util.geometry.Line2;
 import ch.bildspur.sonic.util.geometry.LineIntersection;
 import ch.bildspur.sonic.util.geometry.Vector2;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import main.analyzer.Function2;
+import main.analyzer.AnalyzerController;
 
 /**
  * Created by cansik on 13/05/16.
  */
-public class DiagonalTDAO {
-
-    public float[] ll;
-    public float[] ul;
-    public float[] ur;
-    public float[] lr;
-
-    public Function2<float[], float[], Float> delayAlgorithm;
-
-    public double tableLength;
-    public double tableWidth;
-
-    public Canvas canvas;
-
+public class DiagonalTDAO extends BaseTDAO {
     private Vector2 posLL;
     private Vector2 posUL;
     private Vector2 posUR;
@@ -69,7 +55,7 @@ public class DiagonalTDAO {
         drawLine(result.s, F, Color.CYAN);
         drawVector(result.s, "X", Color.RED);
 
-        return result.s;
+        return convertToTableSpace(result.s);
     }
 
 
@@ -92,8 +78,8 @@ public class DiagonalTDAO {
         double distance = Math.abs(Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2)));
 
         double delta = delayAlgorithm.apply(f, g);
-        double fullTime = 1 / DIWLAlgorithm.SONIC_SPEED * distance;
-        double samplesForDistance = fullTime * DIWLAlgorithm.SAMPLING_RATE;
+        double fullTime = 1 / AnalyzerController.SONIC_SPEED * distance;
+        double samplesForDistance = fullTime * AnalyzerController.SAMPLING_RATE;
         double sampleWay = (samplesForDistance / 2) + delta;
 
         double percentagePosition = (sampleWay / samplesForDistance);

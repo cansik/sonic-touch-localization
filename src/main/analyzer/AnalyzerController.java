@@ -1,6 +1,10 @@
 package main.analyzer;
 
 import ch.bildspur.sonic.*;
+import ch.bildspur.sonic.tdao.BaseTDAO;
+import ch.bildspur.sonic.tdao.DIWLAlgorithm;
+import ch.bildspur.sonic.tdao.DiagonalTDAO;
+import ch.bildspur.sonic.tdao.LinearTDAO;
 import ch.bildspur.sonic.util.geometry.Vector2;
 import ch.fhnw.ether.audio.IAudioRenderTarget;
 import ch.fhnw.ether.audio.JavaSoundTarget;
@@ -29,10 +33,7 @@ import org.json.simple.parser.ParseException;
 import java.io.*;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by cansik on 10/05/16.
@@ -48,13 +49,18 @@ public class AnalyzerController {
     public TextField dataPointLabelLL;
     public TextArea tbConsole;
     public ComboBox cbAutoAlgorithm;
+    public ComboBox cbLagDetection;
 
     LoopRingBuffer bufferLL;
     LoopRingBuffer bufferLU;
     LoopRingBuffer bufferRU;
     LoopRingBuffer bufferRL;
 
+    ObservableList<String> lagDetectionAlgorithms;
     ObservableList<String> algorithms;
+
+    public static float SONIC_SPEED = 343.2f; // m/s
+    public static float SAMPLING_RATE = 96000; // hz
 
     public void initialize() {
         Main.analyzeController = this;
@@ -62,15 +68,23 @@ public class AnalyzerController {
         clearTable();
 
         algorithms = FXCollections.observableArrayList();
+        lagDetectionAlgorithms = FXCollections.observableArrayList();
+
+        // add delay-algorithms
+        lagDetectionAlgorithms.add("threshold");
+        lagDetectionAlgorithms.add("peek");
+        lagDetectionAlgorithms.add("cross-correlation");
 
         // add algorithms
-        algorithms.add("threshold");
-        algorithms.add("peek");
-        algorithms.add("cross-correlation");
+        algorithms.add("linear");
         algorithms.add("diagonal");
+        algorithms.add("diwl");
 
         cbAutoAlgorithm.setItems(algorithms);
         cbAutoAlgorithm.setValue(algorithms.get(0));
+
+        cbLagDetection.setItems(lagDetectionAlgorithms);
+        cbLagDetection.setValue(lagDetectionAlgorithms.get(0));
     }
 
     public void runAutoAlgorithm()
@@ -79,42 +93,57 @@ public class AnalyzerController {
         String algo = (String)cbAutoAlgorithm.getValue();
         switch (algo)
         {
-            case "threshold":
-                btnThreshold_Clicked(null);
-                break;
-            case "peek":
-                btnPeek_Clicked(null);
-                break;
-            case "cross-correlation":
-                btnCrossCorrelation_Clicked(null);
+            case "linear":
+                runLinear();
                 break;
             case "diagonal":
                 runDiagonal();
                 break;
+            case "diwl":
+                runDIWL();
+                break;
         }
+    }
+
+    public Function2<float[], float[], Float> getLagAlgorithm() {
+        TDOAAnalyzer an = new TDOAAnalyzer();
+        Function2<float[], float[], Float> algorithm = (a, b) -> (float) an.peekAnalyzer(a, b);
+
+        String algorithmName = (String) cbLagDetection.getValue();
+
+        switch (algorithmName) {
+            case "threshold":
+                float threshold = Main.inputController.getGestureRecognizer().getThreshold();
+                algorithm = (a, b) -> (float) an.extendedThresholdAnalyzer(a, b, threshold);
+                break;
+            case "peek":
+                algorithm = (a, b) -> (float) an.peekAnalyzer(a, b);
+                break;
+            case "cross-correlation":
+                algorithm = (a, b) -> (float) an.execCorrelation(a, b);
+                break;
+        }
+
+
+        return algorithm;
+    }
+
+    public void runDIWL()
+    {
+        BaseTDAO algo = new DIWLAlgorithm();
+        fillAlgorithmInfos(algo);
+        Vector2 result = algo.run();
+        analyzeResult(result.x, result.y);
     }
 
     public void runDiagonal()
     {
-        DiagonalTDAO diag = new DiagonalTDAO();
-        TDOAAnalyzer an = new TDOAAnalyzer();
+        BaseTDAO algo = new DiagonalTDAO();
+        fillAlgorithmInfos(algo);
+        Vector2 result = algo.run();
 
-        diag.delayAlgorithm = an::execCorrelation;
-
-        diag.ll = bufferLL.getBuffer();
-        diag.ul = bufferLU.getBuffer();
-        diag.ur = bufferRU.getBuffer();
-        diag.lr = bufferRL.getBuffer();
-
-        diag.tableLength = 1.5;
-        diag.tableWidth = 0.75;
-
-        diag.canvas = visTable;
-
-        Vector2 result = diag.run();
-
-        // draw center
         GraphicsContext gc = visTable.getGraphicsContext2D();
+
         // draw grid
         gc.setStroke(Color.DARKGRAY);
         gc.strokeLine(visTable.getWidth() / 2, 0, visTable.getWidth() / 2, visTable.getHeight());
@@ -123,24 +152,27 @@ public class AnalyzerController {
         analyzeResult(result.x, result.y);
     }
 
-    public void btnThreshold_Clicked(ActionEvent actionEvent) {
-        float threshold = Main.inputController.getGestureRecognizer().getThreshold();
-        //if(Main.inputController != null)
-            //threshold = Main.inputController.getGestureRecognizer().getThreshold();
-
-        TDOAAnalyzer an = new TDOAAnalyzer();
-        runTDOAAnalyzing((a, b) -> (float) an.extendedThresholdAnalyzer(a, b, threshold));
+    public void runLinear()
+    {
+        BaseTDAO algo = new LinearTDAO();
+        fillAlgorithmInfos(algo);
+        Vector2 result = algo.run();
+        analyzeResult(result.x, result.y);
     }
 
-    public void btnPeek_Clicked(ActionEvent actionEvent) {
-        TDOAAnalyzer an = new TDOAAnalyzer();
-        runTDOAAnalyzing((a, b) -> (float)an.peekAnalyzer(a, b));
-    }
+    private void fillAlgorithmInfos(BaseTDAO algo)
+    {
+        algo.delayAlgorithm = getLagAlgorithm();
 
-    public void btnCrossCorrelation_Clicked(ActionEvent actionEvent) {
-        TDOAAnalyzer an = new TDOAAnalyzer();
-        //an.crossCorrelationBourke(a, b, a.length, 500)
-        runTDOAAnalyzing((a, b) -> an.execCorrelation(a, b));
+        algo.ll = bufferLL.getBuffer();
+        algo.ul = bufferLU.getBuffer();
+        algo.ur = bufferRU.getBuffer();
+        algo.lr = bufferRL.getBuffer();
+
+        algo.tableLength = 1.5;
+        algo.tableWidth = 0.75;
+
+        algo.canvas = visTable;
     }
 
     public void btnLoad_Clicked(ActionEvent actionEvent) {
@@ -166,30 +198,6 @@ public class AnalyzerController {
         Platform.runLater(() -> {
             tbConsole.setText("Analyzer");
         });
-    }
-
-    double getPercentagePosition(float sonicSpeed, float samplingRate, float tableLength, float[] f, float[] g, Function2<float[], float[], Float> algorithm) {
-        double delta = algorithm.apply(f, g);
-        double fullTime = 1 / sonicSpeed * tableLength;
-        double samplesForDistance = fullTime * samplingRate;
-        double sampleWay = (samplesForDistance / 2) + delta;
-
-        System.out.print("Table length (m): " + tableLength);
-        System.out.print("\tDelta (smp): " + delta);
-        System.out.print("\tFullTime (s): " + fullTime);
-        System.out.print("\tSamples Full (smp): " + samplesForDistance);
-        System.out.print("\tSamples Way (smp): " + sampleWay);
-        System.out.println();
-
-        return (sampleWay / samplesForDistance);
-    }
-
-    void updateProgress(double value) {
-        Platform.runLater(() -> progressBar.setProgress(progressBar.getProgress() + value));
-    }
-
-    void resetProgress() {
-        Platform.runLater(() -> progressBar.setProgress(0));
     }
 
     void loadData(File dir) {
@@ -336,90 +344,6 @@ public class AnalyzerController {
             //System.out.println(event.getX() + ": " + bufferLL.get(i));
             dataPointLabelLL.setText(String.format("%f", bufferLL.get(i)));
         }
-    }
-
-    void runTDOAAnalyzing(Function2<float[], float[], Float> algorithm) {
-        float[] f = bufferLL.getBuffer();
-        float[] g = bufferLU.getBuffer();
-        float[] h = bufferRU.getBuffer();
-        float[] k = bufferRL.getBuffer();
-
-        // prepare params
-        float sonicSpeed = 343.2f; // m/s
-        float samplingRate = 96000; // hz (iphone: 44100)
-
-        float tableLength = 1.50f; // m (iphone: 2)
-        float tableWidth = 0.75f; // m (iphone: 1)
-        float tableDiag = (float)Math.sqrt(Math.pow(tableLength, 2) + Math.pow(tableWidth, 2)); // m (iphone sqrt(5))
-
-        // calculate path percentage
-        double leftPer = getPercentagePosition(sonicSpeed, samplingRate, tableWidth, f, g, algorithm);
-        double rightPer = getPercentagePosition(sonicSpeed, samplingRate, tableWidth, k, h, algorithm);
-        double topPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, g, h, algorithm);
-        double bottomPer = getPercentagePosition(sonicSpeed, samplingRate, tableLength, f, k, algorithm);
-
-        double diagnoal1 = getPercentagePosition(sonicSpeed, samplingRate, tableDiag, f, h, algorithm);
-        double diagnoal2 = getPercentagePosition(sonicSpeed, samplingRate, tableDiag, g, k, algorithm);
-
-        // draw result
-        GraphicsContext gc = visTable.getGraphicsContext2D();
-        gc.clearRect(0, 0, visTable.getWidth(), visTable.getHeight());
-
-        // draw lines
-        double width = visTable.getWidth();
-        double height = visTable.getHeight();
-
-        double size = 10;
-        double hs = size / 2;
-
-        // draw grid
-        gc.setStroke(Color.DARKGRAY);
-        gc.strokeLine(width / 2, 0, width / 2, height);
-        gc.strokeLine(0, height / 2, width, height / 2);
-
-        // left + top
-        gc.setStroke(Color.BLUE);
-        gc.strokeOval(width * topPer - hs, height * leftPer - hs, size, size);
-
-        // left + bottom
-        gc.setStroke(Color.RED);
-        gc.strokeOval(width * bottomPer - hs, height * leftPer - hs, size, size);
-
-        // right + top
-        gc.setStroke(Color.CYAN);
-        gc.strokeOval(width * topPer - hs, height * rightPer - hs, size, size);
-
-        // right + bottom
-        gc.setStroke(Color.ORANGE);
-        gc.strokeOval(width * bottomPer - hs, height * rightPer - hs, size, size);
-
-        // diagonal 1
-        gc.setStroke(Color.MAGENTA);
-        gc.strokeOval(width * diagnoal1 - hs, height * diagnoal1 - hs, size, size);
-
-        // diagonal 2
-        gc.setStroke(Color.LIMEGREEN);
-        gc.strokeOval(width * diagnoal2 - hs, height * diagnoal2 - hs, size, size);
-
-        // calculate center point
-        double meanX = (width * topPer + width * bottomPer) / 2; //+ width * diagnoal1 + width * diagnoal2) / 4;
-        double meanY = (height * rightPer + height * leftPer) / 2; // + height * diagnoal1 + height * diagnoal2) / 4;
-
-        log("P: (" + meanX + "|" + meanY + ")");
-
-        // draw arrow
-        gc.setStroke(Color.BLUE);
-        gc.strokeLine(meanX, meanY, width / 2, height / 2);
-
-        // draw center
-        gc.setStroke(Color.GOLD);
-        gc.strokeOval(meanX - hs, meanY - hs, size, size);
-
-        // draw border
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(1, 1, width - 2, height - 2);
-
-        analyzeResult(meanX, meanY);
     }
 
     void analyzeResult(double x, double y) {

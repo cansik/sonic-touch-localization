@@ -28,17 +28,16 @@
             <Button mnemonicParsing="false" onAction="#btnSaveJSON_Clicked" text="Save" />
             <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <Label text="TDOA:" />
-            <Button mnemonicParsing="false" onAction="#btnThreshold_Clicked" text="Threshold" />
-            <Button mnemonicParsing="false" onAction="#btnPeek_Clicked" text="Peek" />
-            <Button mnemonicParsing="false" onAction="#btnCrossCorrelation_Clicked" text="Cross" />
-            <Button mnemonicParsing="false" onAction="#btnDavidInvertedWaveLocalization_Clicked" text="DIWL" />
-            <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <ComboBox fx:id="cbAutoAlgorithm" prefWidth="150.0" />
+            <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
+            <Label text="Lag Detection:" />
+            <ComboBox fx:id="cbLagDetection" prefWidth="150.0" />
+            <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <Button mnemonicParsing="false" onAction="#btnRunAlgo_Clicked" text="Run" />
         </items>
       </ToolBar>
-      <Canvas fx:id="visTable" height="161.0" layoutX="152.0" layoutY="373.0" width="322.0" />
-      <Label layoutX="80.0" layoutY="451.0" text="TABLE:" />
+      <Canvas fx:id="visTable" height="161.0" layoutX="111.0" layoutY="380.0" width="322.0" />
+      <Label layoutX="36.0" layoutY="452.0" text="TABLE:" />
       <ProgressBar fx:id="progressBar" layoutY="588.0" prefHeight="20.0" prefWidth="759.0" progress="0.0" />
       <TextField fx:id="dataPointLabelLL" editable="false" layoutX="38.0" layoutY="95.0" prefHeight="21.0" prefWidth="83.0">
          <font>
