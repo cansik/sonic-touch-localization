@@ -105,7 +105,7 @@ public class AnalyzerController {
         diag.lr = bufferRL.getBuffer();
 
         diag.tableLength = 1.5;
-        diag.tableWidth = 0.5;
+        diag.tableWidth = 0.75;
 
         diag.canvas = visTable;
 

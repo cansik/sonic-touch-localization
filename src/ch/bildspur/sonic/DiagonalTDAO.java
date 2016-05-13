@@ -30,14 +30,13 @@ public class DiagonalTDAO {
 
     public void run()
     {
-        // canvas for drawing
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-
         // define positions by table size
         posLL = new Vector2(0, tableWidth);
         posUL = new Vector2(0, 0);
         posUR = new Vector2(tableLength, 0);
         posLR = new Vector2(tableLength, tableWidth);
+
+        drawDiagonals();
 
         // calculate distance point of e
         Vector2 E = getDistancePoint(ll, ur, posLL, posUR);
@@ -46,17 +45,28 @@ public class DiagonalTDAO {
         Vector2 F = getDistancePoint(ul, lr, posUL, posLR);
 
         // draw vectors
-        Vector2 eC = convertToTableSpace(E);
-        Vector2 fC = convertToTableSpace(F);
+        drawVector(E, "E");
+        drawVector(F, "F");
 
-        gc.setStroke(Color.BLUE);
-        gc.strokeOval(eC.x, eC.y, 10, 10);
-        gc.strokeOval(fC.x, fC.y, 10, 10);
+        // calculate orthogonal vector to e
+        Vector2 orthE = getOrthogonalVector(posLL, posUR, E, 0.1);
 
-        // calculate diagonal vector to e
-        // calculate diagnonal vector to f
+        // calculate orthogonal vector to f
+        Vector2 orthF = getOrthogonalVector(posUL, posLR, F, 0.1);
+
+        drawVector(orthE, "oE");
+        drawVector(orthF, "oF");
 
         // intersect v2 and v2
+    }
+
+
+    Vector2 getOrthogonalVector(Vector2 A, Vector2 B, Vector2 OP, double length)
+    {
+        Vector2 AB = B.sub(A);
+        Vector2 ABorth = AB.rotPlus90().normalize(); //new Vector2(AB.y, -AB.x).normalize();
+        Vector2 Q = ABorth.scale(length).add(OP);
+        return Q;
     }
 
     Vector2 convertToTableSpace(Vector2 v)
@@ -88,5 +98,31 @@ public class DiagonalTDAO {
         Vector2 signalStart = fPos.add(vScaled);
 
         return signalStart;
+    }
+
+    void drawDiagonals()
+    {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.setStroke(Color.ORANGE);
+
+        Vector2 cLL = convertToTableSpace(posLL);
+        Vector2 cUL = convertToTableSpace(posUL);
+        Vector2 cUR = convertToTableSpace(posUR);
+        Vector2 cLR = convertToTableSpace(posLR);
+
+        gc.strokeLine(cLL.x, cLL.y, cUR.x, cUR.y);
+        gc.strokeLine(cUL.x, cUL.y, cLR.x, cLR.y);
+    }
+
+    void drawVector(Vector2 v, String name)
+    {
+        float size = 5;
+        float hs = size / 2;
+        Vector2 vC = convertToTableSpace(v);
+        // canvas for drawing
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.setStroke(Color.BLUE);
+        gc.strokeOval(vC.x - hs, vC.y - hs, size, size);
+        gc.strokeText(name, vC.x + size, vC.y + size);
     }
 }
