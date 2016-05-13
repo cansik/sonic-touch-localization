@@ -1,5 +1,7 @@
 package ch.bildspur.sonic;
 
+import ch.bildspur.sonic.util.geometry.Line2;
+import ch.bildspur.sonic.util.geometry.LineIntersection;
 import ch.bildspur.sonic.util.geometry.Vector2;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -28,7 +30,7 @@ public class DiagonalTDAO {
     private Vector2 posUR;
     private Vector2 posLR;
 
-    public void run()
+    public Vector2 run()
     {
         // define positions by table size
         posLL = new Vector2(0, tableWidth);
@@ -45,8 +47,8 @@ public class DiagonalTDAO {
         Vector2 F = getDistancePoint(ul, lr, posUL, posLR);
 
         // draw vectors
-        drawVector(E, "E");
-        drawVector(F, "F");
+        drawVector(E, "E", Color.BLUE);
+        drawVector(F, "F", Color.BLUE);
 
         // calculate orthogonal vector to e
         Vector2 orthE = getOrthogonalVector(posLL, posUR, E, 0.1);
@@ -54,10 +56,20 @@ public class DiagonalTDAO {
         // calculate orthogonal vector to f
         Vector2 orthF = getOrthogonalVector(posUL, posLR, F, 0.1);
 
-        drawVector(orthE, "oE");
-        drawVector(orthF, "oF");
+        drawVector(orthE, "oE", Color.GREEN);
+        drawVector(orthF, "oF", Color.GREEN);
 
         // intersect v2 and v2
+        Line2 g = new Line2(E, orthE);
+        Line2 h = new Line2(F, orthF);
+
+        LineIntersection result = g.intersect(h);
+
+        drawLine(result.s, E, Color.CYAN);
+        drawLine(result.s, F, Color.CYAN);
+        drawVector(result.s, "X", Color.RED);
+
+        return result.s;
     }
 
 
@@ -102,26 +114,28 @@ public class DiagonalTDAO {
 
     void drawDiagonals()
     {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.setStroke(Color.ORANGE);
-
-        Vector2 cLL = convertToTableSpace(posLL);
-        Vector2 cUL = convertToTableSpace(posUL);
-        Vector2 cUR = convertToTableSpace(posUR);
-        Vector2 cLR = convertToTableSpace(posLR);
-
-        gc.strokeLine(cLL.x, cLL.y, cUR.x, cUR.y);
-        gc.strokeLine(cUL.x, cUL.y, cLR.x, cLR.y);
+        drawLine(posLL, posUR, Color.ORANGE);
+        drawLine(posUL, posLR, Color.ORANGE);
     }
 
-    void drawVector(Vector2 v, String name)
+    void drawLine(Vector2 a, Vector2 b, Color c)
+    {
+        Vector2 cA = convertToTableSpace(a);
+        Vector2 cB = convertToTableSpace(b);
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.setStroke(c);
+        gc.strokeLine(cA.x, cA.y, cB.x, cB.y);
+    }
+
+    void drawVector(Vector2 v, String name, Color c)
     {
         float size = 5;
         float hs = size / 2;
         Vector2 vC = convertToTableSpace(v);
         // canvas for drawing
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.setStroke(Color.BLUE);
+        gc.setStroke(c);
         gc.strokeOval(vC.x - hs, vC.y - hs, size, size);
         gc.strokeText(name, vC.x + size, vC.y + size);
     }

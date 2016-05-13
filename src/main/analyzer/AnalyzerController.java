@@ -1,6 +1,7 @@
 package main.analyzer;
 
 import ch.bildspur.sonic.*;
+import ch.bildspur.sonic.util.geometry.Vector2;
 import ch.fhnw.ether.audio.IAudioRenderTarget;
 import ch.fhnw.ether.audio.JavaSoundTarget;
 import ch.fhnw.ether.audio.URLAudioSource;
@@ -74,6 +75,7 @@ public class AnalyzerController {
 
     public void runAutoAlgorithm()
     {
+        clearTable();
         String algo = (String)cbAutoAlgorithm.getValue();
         switch (algo)
         {
@@ -109,7 +111,7 @@ public class AnalyzerController {
 
         diag.canvas = visTable;
 
-        diag.run();
+        Vector2 result = diag.run();
 
         // draw center
         GraphicsContext gc = visTable.getGraphicsContext2D();
@@ -118,6 +120,7 @@ public class AnalyzerController {
         gc.strokeLine(visTable.getWidth() / 2, 0, visTable.getWidth() / 2, visTable.getHeight());
         gc.strokeLine(0, visTable.getHeight() / 2, visTable.getWidth(), visTable.getHeight() / 2);
 
+        analyzeResult(result.x, result.y);
     }
 
     public void btnThreshold_Clicked(ActionEvent actionEvent) {
