@@ -34,6 +34,7 @@
             <ComboBox fx:id="cbLagDetection" prefWidth="150.0" />
             <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="0.0" />
             <Button mnemonicParsing="false" onAction="#btnRunAlgo_Clicked" text="Run" />
+            <Button mnemonicParsing="false" onAction="#btnRunLag_Clicked" text="Lag" />
         </items>
       </ToolBar>
       <Canvas fx:id="visTable" height="161.0" layoutX="111.0" layoutY="380.0" width="322.0" />

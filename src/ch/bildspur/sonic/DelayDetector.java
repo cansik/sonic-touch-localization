@@ -10,7 +10,7 @@ import java.util.Arrays;
 /**
  * Created by cansik on 26/04/16.
  */
-public class TDOAAnalyzer {
+public class DelayDetector {
 
 
     public float[] crossCorrelation(float[] f, float[] g)

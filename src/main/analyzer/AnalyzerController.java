@@ -106,7 +106,7 @@ public class AnalyzerController {
     }
 
     public Function2<float[], float[], Float> getLagAlgorithm() {
-        TDOAAnalyzer an = new TDOAAnalyzer();
+        DelayDetector an = new DelayDetector();
         Function2<float[], float[], Float> algorithm = (a, b) -> (float) an.peekAnalyzer(a, b);
 
         String algorithmName = (String) cbLagDetection.getValue();
@@ -416,8 +416,13 @@ public class AnalyzerController {
         System.out.println("Gain: " + (float)(double)root.get("gain"));
         System.out.println("Threshold: " + (float)(double)root.get("threshold"));
 
-        Main.inputController.setGain((float)(double)root.get("gain"));
-        Main.inputController.getGestureRecognizer().setThreshold((float)(double)root.get("threshold"));
+        try {
+            Main.inputController.setGain((float) (double) root.get("gain"));
+            Main.inputController.getGestureRecognizer().setThreshold((float) (double) root.get("threshold"));
+        } catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
 
         //read data into buffers
         JSONObject data = (JSONObject)root.get("data");
@@ -501,5 +506,44 @@ public class AnalyzerController {
 
     public void btnRunAlgo_Clicked(ActionEvent actionEvent) {
         Platform.runLater(() -> runAutoAlgorithm());
+    }
+
+    public void btnRunLag_Clicked(ActionEvent actionEvent) {
+        StringBuilder sb = new StringBuilder();
+
+        Function2<float[], float[], Float> lagAlgorithm = getLagAlgorithm();
+
+        // calculate lag between all
+        float[] ll = bufferLL.getBuffer();
+        float[] ul = bufferLU.getBuffer();
+        float[] ur = bufferRU.getBuffer();
+        float[] lr = bufferRL.getBuffer();
+
+        // calc
+        sb.append("LL - UL: " + lagAlgorithm.apply(ll, ul) + "\n");
+        sb.append("LL - UR: " + lagAlgorithm.apply(ll, ur) + "\n");
+        sb.append("LL - LR: " + lagAlgorithm.apply(ll, lr) + "\n");
+        sb.append("---\n");
+        sb.append("UL - LL: " + lagAlgorithm.apply(ul, ll) + "\n");
+        sb.append("UL - UR: " + lagAlgorithm.apply(ul, ur) + "\n");
+        sb.append("UL - LR: " + lagAlgorithm.apply(ul, lr) + "\n");
+        sb.append("---\n");
+        sb.append("UR - LL: " + lagAlgorithm.apply(ur, ll) + "\n");
+        sb.append("UR - UL: " + lagAlgorithm.apply(ur, ul) + "\n");
+        sb.append("UR - LR: " + lagAlgorithm.apply(ur, lr) + "\n");
+        sb.append("---\n");
+        sb.append("LR - LL: " + lagAlgorithm.apply(lr, ll) + "\n");
+        sb.append("LR - UL: " + lagAlgorithm.apply(lr, ul) + "\n");
+        sb.append("LR - UR: " + lagAlgorithm.apply(lr, ur) + "\n");
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Lag Algorithm Information");
+        alert.setHeaderText("Results of '" + cbLagDetection.getValue() + "' lag algorithm:");
+        alert.setContentText(sb.toString());
+
+        System.out.println(cbLagDetection.getValue() + ":");
+        System.out.println(sb.toString());
+
+        alert.showAndWait();
     }
 }

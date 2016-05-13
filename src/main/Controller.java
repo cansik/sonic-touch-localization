@@ -290,7 +290,7 @@ public class Controller implements IGestureHandler {
         Platform.runLater(() -> drawBuffer(f, visAnalyzing, Color.CYAN, true, -1));
         Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true, -1));
 
-        TDOAAnalyzer a = new TDOAAnalyzer();
+        DelayDetector a = new DelayDetector();
         float corr = a.execCorrelation(f, g);
 
         float bourke = a.crossCorrelationBourke(f, g, f.length, 100);
@@ -334,7 +334,7 @@ public class Controller implements IGestureHandler {
         float[] f = lrb1.getBuffer();
         float[] g = lrb2.getBuffer();
 
-        TDOAAnalyzer a = new TDOAAnalyzer();
+        DelayDetector a = new DelayDetector();
         float[] cross = a.crossCorrelation(f, g);
 
         float corr = a.execCorrelation(f, g);
