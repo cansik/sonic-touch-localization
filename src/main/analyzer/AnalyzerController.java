@@ -1,6 +1,7 @@
 package main.analyzer;
 
 import ch.bildspur.sonic.*;
+import ch.bildspur.sonic.ltm.OneChannelLTM;
 import ch.bildspur.sonic.tdao.BaseTDAO;
 import ch.bildspur.sonic.tdao.DIWLAlgorithm;
 import ch.bildspur.sonic.tdao.DiagonalTDAO;
@@ -62,6 +63,8 @@ public class AnalyzerController {
     public static float SONIC_SPEED = 343.2f; // m/s
     public static float SAMPLING_RATE = 96000; // hz
 
+    OneChannelLTM oneLTM = new OneChannelLTM();
+
     public void initialize() {
         Main.analyzeController = this;
         clearLog();
@@ -79,6 +82,7 @@ public class AnalyzerController {
         algorithms.add("linear");
         algorithms.add("diagonal");
         algorithms.add("diwl");
+        algorithms.addAll("oneLTM");
 
         cbAutoAlgorithm.setItems(algorithms);
         cbAutoAlgorithm.setValue(algorithms.get(0));
@@ -101,6 +105,8 @@ public class AnalyzerController {
                 break;
             case "diwl":
                 runDIWL();
+            case "oneLTM":
+                runOneLTM();
                 break;
         }
     }
@@ -126,6 +132,46 @@ public class AnalyzerController {
 
 
         return algorithm;
+    }
+
+    public void trainLTM()
+    {
+        if(oneLTM.getStep() == 3)
+        {
+            log("reset callibration");
+            oneLTM.reset();
+        }
+
+        int step = oneLTM.getStep();
+
+        switch (step)
+        {
+            case 0:
+                // first init
+                log("oneLTM Calibration");
+                log("press on the right side");
+                oneLTM.incStep();
+                break;
+            case 1:
+                fillAlgorithmInfos(oneLTM);
+                oneLTM.train("RIGHT", new Vector2(oneLTM.tableLength, oneLTM.tableWidth / 2), bufferLL.getBuffer());
+                log("press on the left side");
+                oneLTM.incStep();
+                break;
+            case 2:
+                fillAlgorithmInfos(oneLTM);
+                oneLTM.train("LEFT", new Vector2(0, oneLTM.tableWidth / 2), bufferLL.getBuffer());
+                log("calibration done!");
+                oneLTM.incStep();
+                break;
+        }
+    }
+
+    public void runOneLTM()
+    {
+        fillAlgorithmInfos(oneLTM);
+        Vector2 result = oneLTM.run();
+        analyzeResult(result.x, result.y);
     }
 
     public void runDIWL()
@@ -539,5 +585,9 @@ public class AnalyzerController {
         System.out.println(sb.toString());
 
         alert.showAndWait();
+    }
+
+    public void oneLTM_Clicked(ActionEvent actionEvent) {
+        trainLTM();
     }
 }
