@@ -51,5 +51,10 @@
          </font>
       </TextArea>
       <Button layoutX="9.0" layoutY="561.0" mnemonicParsing="false" onAction="#oneLTM_Clicked" text="oneLTM Calibration" />
+      <Button layoutX="57.0" layoutY="56.0" mnemonicParsing="false" onAction="#OnZoom_Clicked" text="Zoom">
+         <font>
+            <Font size="10.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>

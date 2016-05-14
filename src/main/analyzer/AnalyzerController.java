@@ -66,6 +66,8 @@ public class AnalyzerController {
 
     OneChannelLTM oneLTM = new OneChannelLTM();
 
+    boolean isZoomed = false;
+
     public void initialize() {
         Main.analyzeController = this;
         clearLog();
@@ -338,10 +340,14 @@ public class AnalyzerController {
     }
 
     void drawBuffer(float[] buffer, Canvas c, Color color) {
-        drawBuffer(buffer, c, color, 1.0f);
+        drawBuffer(buffer, c, color, 1.0f, 1);
     }
 
     void drawBuffer(float[] buffer, Canvas c, Color color, float gainFactor) {
+        drawBuffer(buffer, c, color, gainFactor, 1);
+    }
+
+    void drawBuffer(float[] buffer, Canvas c, Color color, float gainFactor, double size) {
         GraphicsContext gc = c.getGraphicsContext2D();
         gc.clearRect(0, 0, c.getWidth(), c.getHeight());
         float space = (float) (c.getWidth() / buffer.length);
@@ -353,8 +359,37 @@ public class AnalyzerController {
         for (int i = 0; i < buffer.length - 1; i++) {
             float v = buffer[i];
 
-            gc.fillOval(space * i, y + (y * v * gainFactor), 1, 1);
+            gc.fillOval(space * i, y + (y * v * gainFactor), size, size);
         }
+
+        // draw border
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(1, 1, c.getWidth() - 2, c.getHeight() - 2);
+    }
+
+    void drawLineBuffer(float[] buffer, Canvas c, Color color, float gainFactor, double size) {
+        GraphicsContext gc = c.getGraphicsContext2D();
+        gc.clearRect(0, 0, c.getWidth(), c.getHeight());
+        float space = (float) (c.getWidth() / buffer.length);
+
+        gc.setFill(color);
+
+        float y = (float) c.getHeight() / 2f;
+
+        double[] xValues = new double[buffer.length];
+        double[] yValues = new double[buffer.length];
+
+        for (int i = 0; i < buffer.length - 1; i++) {
+            float v = buffer[i];
+
+            xValues[i] = space * i;
+            yValues[i] = y + (y * v * gainFactor);
+
+            gc.fillOval(space * i, y + (y * v * gainFactor), size, size);
+        }
+
+        gc.setStroke(Color.LIGHTGRAY);
+        gc.strokePolyline(xValues, yValues, buffer.length - 1);
 
         // draw border
         gc.setStroke(Color.BLACK);
@@ -491,7 +526,7 @@ public class AnalyzerController {
             Main.inputController.getGestureRecognizer().setThreshold((float) (double) root.get("threshold"));
         } catch (Exception ex)
         {
-            ex.printStackTrace();
+            //ex.printStackTrace();
         }
 
         //read data into buffers
@@ -613,5 +648,74 @@ public class AnalyzerController {
 
     public void oneLTM_Clicked(ActionEvent actionEvent) {
         trainLTM();
+    }
+
+    public void OnZoom_Clicked(ActionEvent actionEvent) {
+
+        if(isZoomed)
+        {
+            drawAllBuffer("-");
+            isZoomed = false;
+            return;
+        }
+
+        int peek = DIWLAlgorithm.getPeekPosition(bufferLL.getBuffer());
+
+        float gain = zoomBuffer(bufferLL, peek, visLeftLower, Color.BLUE, -1);
+        zoomBuffer(bufferLU, peek, visLeftUpper, Color.RED, gain);
+        zoomBuffer(bufferRU, peek, visRightUpper, Color.GREEN, gain);
+        zoomBuffer(bufferRL, peek, visRightLower, Color.ORANGE, gain);
+        isZoomed = true;
+    }
+
+    public float zoomBuffer(LoopRingBuffer lrp, int peek, Canvas vis, Color c, float gain)
+    {
+        // show zoomed view to peek point
+        int sampleOffset = 100;
+
+        float[] data = lrp.getBuffer();
+        float[] peekData = getPart(data, peek-sampleOffset, sampleOffset * 2);
+
+        // calculate own peek
+        int p = DIWLAlgorithm.getPeekPosition(data);
+        int peekOffset = (p - peek) + sampleOffset;
+
+        float gainFactor = gain;
+        if(gain < 0)
+        {
+            float max = 0;
+            for (int i = 0; i < data.length; i++) {
+                if (max < data[i]) max = data[i];
+            }
+            gainFactor = 1.0f / max;
+        }
+
+        float k = gainFactor;
+
+        Platform.runLater(() -> {
+            // draw wave
+            drawLineBuffer(peekData, vis, c, k, 2);
+
+            // draw peek indicator
+            GraphicsContext gc = vis.getGraphicsContext2D();
+            gc.setStroke(Color.MAGENTA);
+            double space = vis.getWidth() / (float)peekData.length;
+            gc.strokeLine(space * peekOffset, 0, space * peekOffset, vis.getHeight());
+        });
+
+        return k;
+    }
+
+    public float[] getPart(float[] data, int start, int length)
+    {
+        float[] result = new float[length];
+        for(int i = start; i < start + length; i++)
+        {
+            if(data.length > i && i >= 0)
+                result[i-start] = data[i];
+            else
+                result[i-start] = 0;
+        }
+        return result;
     }
 }
