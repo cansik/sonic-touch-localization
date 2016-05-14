@@ -1,5 +1,8 @@
 package ch.bildspur.sonic;
 
+import ch.bildspur.sonic.ltm.OneChannelLTM;
+import ch.bildspur.sonic.ltm.util.DSP;
+import ch.bildspur.sonic.tdao.DIWLAlgorithm;
 import ch.fhnw.ether.audio.AudioFrame;
 import ch.fhnw.ether.audio.AudioUtilities;
 import ch.fhnw.ether.audio.FFT;
@@ -250,5 +253,19 @@ public class DelayDetector {
         }
 
         return maxPosF - maxPosG;
+    }
+
+
+    public float xcrossDSPDelay(float[] f, float[] g)
+    {
+        double[] a = OneChannelLTM.toDA(f);
+        double[] b = OneChannelLTM.toDA(g);
+        double[] abCross = DSP.xcorr(a, b);
+        double[] baCross = DSP.xcorr(b, a);
+
+        int pA = DIWLAlgorithm.getPeekPosition(OneChannelLTM.toFA(abCross));
+        int pB = DIWLAlgorithm.getPeekPosition(OneChannelLTM.toFA(baCross));
+
+        return pA - pB;
     }
 }

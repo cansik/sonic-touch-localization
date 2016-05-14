@@ -22,7 +22,7 @@ public class DIWLAlgorithm extends BaseTDAO {
         return new Vector2(0, 0);
     }
 
-    int getPeekPosition(float[] f)
+    public static int getPeekPosition(float[] f)
     {
         int maxPosF = -1;
         float maxValueF = 0;

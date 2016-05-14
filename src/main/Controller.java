@@ -290,6 +290,7 @@ public class Controller implements IGestureHandler {
         Platform.runLater(() -> drawBuffer(f, visAnalyzing, Color.CYAN, true, -1));
         Platform.runLater(() -> drawBuffer(g, visAnalyzingRight, Color.MAGENTA, true, -1));
 
+        /*
         DelayDetector a = new DelayDetector();
         float corr = a.execCorrelation(f, g);
 
@@ -315,6 +316,7 @@ public class Controller implements IGestureHandler {
         {
             System.out.println("\tCenter");
         }
+        */
     }
 
     @Override

@@ -37,15 +37,27 @@ public class OneChannelLTM extends BaseTDAO {
             }
         }
 
+        System.out.println("ONELTM: " + bestPattern.name);
+
         return bestPattern.location;
     }
 
-    public double[] toDA(float[] arr)
+    public static double[] toDA(float[] arr)
     {
         double[] res =  new double[arr.length];
         for(int i = 0; i < arr.length; i++)
         {
             res[i] = (double)arr[i];
+        }
+        return res;
+    }
+
+    public static float[] toFA(double[] arr)
+    {
+        float[] res =  new float[arr.length];
+        for(int i = 0; i < arr.length; i++)
+        {
+            res[i] = (float)arr[i];
         }
         return res;
     }

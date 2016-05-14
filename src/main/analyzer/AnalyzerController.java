@@ -2,6 +2,7 @@ package main.analyzer;
 
 import ch.bildspur.sonic.*;
 import ch.bildspur.sonic.ltm.OneChannelLTM;
+import ch.bildspur.sonic.ltm.util.DSP;
 import ch.bildspur.sonic.tdao.BaseTDAO;
 import ch.bildspur.sonic.tdao.DIWLAlgorithm;
 import ch.bildspur.sonic.tdao.DiagonalTDAO;
@@ -77,6 +78,7 @@ public class AnalyzerController {
         lagDetectionAlgorithms.add("threshold");
         lagDetectionAlgorithms.add("peek");
         lagDetectionAlgorithms.add("cross-correlation");
+        lagDetectionAlgorithms.add("xcross");
 
         // add algorithms
         algorithms.add("linear");
@@ -105,6 +107,7 @@ public class AnalyzerController {
                 break;
             case "diwl":
                 runDIWL();
+                break;
             case "oneLTM":
                 runOneLTM();
                 break;
@@ -127,6 +130,9 @@ public class AnalyzerController {
                 break;
             case "cross-correlation":
                 algorithm = (a, b) -> (float) an.execCorrelation(a, b);
+                break;
+            case "xcross":
+                algorithm = (a, b) -> an.xcrossDSPDelay(a, b);
                 break;
         }
 
@@ -154,13 +160,13 @@ public class AnalyzerController {
                 break;
             case 1:
                 fillAlgorithmInfos(oneLTM);
-                oneLTM.train("RIGHT", new Vector2(oneLTM.tableLength, oneLTM.tableWidth / 2), bufferLL.getBuffer());
+                oneLTM.train("RIGHT", new Vector2(visTable.getWidth(), visTable.getHeight() / 2), bufferLL.getBuffer());
                 log("press on the left side");
                 oneLTM.incStep();
                 break;
             case 2:
                 fillAlgorithmInfos(oneLTM);
-                oneLTM.train("LEFT", new Vector2(0, oneLTM.tableWidth / 2), bufferLL.getBuffer());
+                oneLTM.train("LEFT", new Vector2(0, visTable.getHeight() / 2), bufferLL.getBuffer());
                 log("calibration done!");
                 oneLTM.incStep();
                 break;
@@ -172,6 +178,24 @@ public class AnalyzerController {
         fillAlgorithmInfos(oneLTM);
         Vector2 result = oneLTM.run();
         analyzeResult(result.x, result.y);
+
+        GraphicsContext gc = visTable.getGraphicsContext2D();
+
+        double halfTableWidth = visTable.getWidth() / 2;
+
+        if(result.x > halfTableWidth)
+        {
+            //RIGHT
+            gc.setFill(Color.RED);
+            gc.fillRect(halfTableWidth, 0, halfTableWidth, visTable.getHeight());
+
+        }
+        else
+        {
+            //LEFT
+            gc.setFill(Color.BLUE);
+            gc.fillRect(0, 0, halfTableWidth, visTable.getHeight());
+        }
     }
 
     public void runDIWL()
@@ -377,10 +401,10 @@ public class AnalyzerController {
         this.bufferRU = bufferRU;
         this.bufferRL = bufferRL;
 
-        log("loaded live input buffer (" + bufferLL.size() + ")");
+        //log("loaded live input buffer (" + bufferLL.size() + ")");
 
         // draw visualisation
-        drawAllBuffer("LIVE");
+        drawAllBuffer("LIVE (" + bufferLL.size() + ")");
     }
 
     public void visMouse_Moved(MouseEvent event) {
