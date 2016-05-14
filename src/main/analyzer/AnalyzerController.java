@@ -162,13 +162,13 @@ public class AnalyzerController {
                 break;
             case 1:
                 fillAlgorithmInfos(oneLTM);
-                oneLTM.train("RIGHT", new Vector2(visTable.getWidth(), visTable.getHeight() / 2), bufferLL.getBuffer());
+                oneLTM.train("RIGHT", new Vector2(visTable.getWidth(), visTable.getHeight() / 2d), bufferLL.getBuffer());
                 log("press on the left side");
                 oneLTM.incStep();
                 break;
             case 2:
                 fillAlgorithmInfos(oneLTM);
-                oneLTM.train("LEFT", new Vector2(0, visTable.getHeight() / 2), bufferLL.getBuffer());
+                oneLTM.train("LEFT", new Vector2(0, visTable.getHeight() / 2d), bufferLL.getBuffer());
                 log("calibration done!");
                 oneLTM.incStep();
                 break;
@@ -183,7 +183,7 @@ public class AnalyzerController {
 
         GraphicsContext gc = visTable.getGraphicsContext2D();
 
-        double halfTableWidth = visTable.getWidth() / 2;
+        double halfTableWidth = visTable.getWidth() / 2d;
 
         if(result.x > halfTableWidth)
         {
@@ -218,8 +218,8 @@ public class AnalyzerController {
 
         // draw grid
         gc.setStroke(Color.DARKGRAY);
-        gc.strokeLine(visTable.getWidth() / 2, 0, visTable.getWidth() / 2, visTable.getHeight());
-        gc.strokeLine(0, visTable.getHeight() / 2, visTable.getWidth(), visTable.getHeight() / 2);
+        gc.strokeLine(visTable.getWidth() / 2d, 0, visTable.getWidth() / 2d, visTable.getHeight());
+        gc.strokeLine(0, visTable.getHeight() / 2d, visTable.getWidth(), visTable.getHeight() / 2d);
 
         analyzeResult(result.x, result.y);
     }
@@ -459,17 +459,17 @@ public class AnalyzerController {
 
         // get fixpoints
         Map<String, Vector2d> fixPoints = new HashMap<>();
-        fixPoints.put("center", new Vector2d(width / 2, height / 2));
+        fixPoints.put("center", new Vector2d(width / 2d, height / 2d));
 
         fixPoints.put("lower left", new Vector2d(0, height));
         fixPoints.put("upper left", new Vector2d(0, 0));
         fixPoints.put("upper right", new Vector2d(width, 0));
         fixPoints.put("lower right", new Vector2d(width, height));
 
-        fixPoints.put("center left", new Vector2d(0, height / 2));
-        fixPoints.put("center top", new Vector2d(width / 2, 0));
-        fixPoints.put("center right", new Vector2d(width, height / 2));
-        fixPoints.put("center bottom", new Vector2d(width / 2, height));
+        fixPoints.put("center left", new Vector2d(0, height / 2d));
+        fixPoints.put("center top", new Vector2d(width / 2d, 0));
+        fixPoints.put("center right", new Vector2d(width, height / 2d));
+        fixPoints.put("center bottom", new Vector2d(width / 2d, height));
 
         // anaylze
         double minDistance = Double.MAX_VALUE;

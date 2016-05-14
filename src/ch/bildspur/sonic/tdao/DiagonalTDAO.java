@@ -18,11 +18,7 @@ public class DiagonalTDAO extends BaseTDAO {
 
     public Vector2 run()
     {
-        // define positions by table size
-        posLL = new Vector2(0, tableWidth);
-        posUL = new Vector2(0, 0);
-        posUR = new Vector2(tableLength, 0);
-        posLR = new Vector2(tableLength, tableWidth);
+        calculateMicPositions();
 
         drawDiagonals();
 

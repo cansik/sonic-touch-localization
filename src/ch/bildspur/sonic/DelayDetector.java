@@ -252,8 +252,7 @@ public class DelayDetector {
             }
         }
 
-        //return maxPosF - maxPosG;
-        return maxPosG - maxPosF;
+        return maxPosF - maxPosG;
     }
 
 

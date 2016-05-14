@@ -23,4 +23,18 @@ public abstract class BaseTDAO {
     public AnalyzerController controller;
 
     public abstract Vector2 run();
+
+    protected Vector2 posLL;
+    protected Vector2 posUL;
+    protected Vector2 posUR;
+    protected Vector2 posLR;
+
+    public void calculateMicPositions()
+    {
+        // define positions by table size
+        posLL = new Vector2(0, tableWidth);
+        posUL = new Vector2(0, 0);
+        posUR = new Vector2(tableLength, 0);
+        posLR = new Vector2(tableLength, tableWidth);
+    }
 }
