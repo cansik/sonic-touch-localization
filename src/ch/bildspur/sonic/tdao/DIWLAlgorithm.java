@@ -43,7 +43,7 @@ public class DIWLAlgorithm extends BaseTDAO {
         // get the shortest intersection points of all circles (on table)
         // calculate emphasis of intersection points
         // finally we have a position
-        runApproximation(channels, 500, 20);
+        runApproximation(channels, 500, 5);
 
         return new Vector2(0, 0);
     }
@@ -190,7 +190,7 @@ public class DIWLAlgorithm extends BaseTDAO {
         double d = convertToTableSpace(circle.r) * 2d;
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.setLineWidth(2);
+        gc.setLineWidth(1);
         gc.setStroke(color);
         double r = d / 2d;
         gc.strokeOval(c.x - r, c.y - r, d, d);
