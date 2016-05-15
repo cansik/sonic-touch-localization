@@ -11,11 +11,6 @@ import main.analyzer.AnalyzerController;
  * Created by cansik on 13/05/16.
  */
 public class DiagonalTDAO extends BaseTDAO {
-    private Vector2 posLL;
-    private Vector2 posUL;
-    private Vector2 posUR;
-    private Vector2 posLR;
-
     public Vector2 run()
     {
         calculateMicPositions();

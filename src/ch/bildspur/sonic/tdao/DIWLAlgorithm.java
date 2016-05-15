@@ -2,6 +2,7 @@ package ch.bildspur.sonic.tdao;
 
 import ch.bildspur.sonic.Vector2d;
 import ch.bildspur.sonic.util.geometry.Circle;
+import ch.bildspur.sonic.util.geometry.CircleCircleIntersection;
 import ch.bildspur.sonic.util.geometry.Vector2;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -47,10 +48,30 @@ public class DIWLAlgorithm extends BaseTDAO {
         return new Vector2(0, 0);
     }
 
+    void circleTest() {
+        // test
+        double htL = tableLength / 2d;
+        double htW = tableWidth / 2d;
+        Circle c1 = new Circle(new Vector2(htL - (htL * 0.25), htW), htW * 1.5 / 2d);
+        Circle c2 = new Circle(new Vector2(htL + (htL * 0.25), htW), htW * 1.5 / 2d);
+
+        drawCircle(c1, Color.RED);
+        drawCircle(c2, Color.BLUE);
+
+        CircleCircleIntersection intersection = new CircleCircleIntersection(c1, c2);
+        for (Vector2 v : intersection.getIntersectionPoints())
+            drawCross(new Vector2(v.x, v.y), Color.GREEN);
+    }
+
     void runApproximation(Channel[] channels, float maxTime, float stepSize)
     {
         // todo: find better cancel criteria (table size)
         float time = stepSize;
+
+        // gauss
+        int n = channels.length - 1;
+        int intersectionCount = (int) ((Math.pow(n, 2) + n) / 2);
+        CircleCircleIntersection[] intersections = new CircleCircleIntersection[intersectionCount];
 
         while(time < maxTime)
         {
@@ -60,10 +81,50 @@ public class DIWLAlgorithm extends BaseTDAO {
                 drawCircle(c.getCircle(time), color);
             }
 
+            boolean circlesDisjunct = false;
 
+            // calculate intersections
+            int intersectionCounter = 0;
+            for (int i = 0; i < n; i++) {
+                Channel c1 = channels[i];
+                for (int j = i + 1; j < channels.length; j++) {
+                    Channel c2 = channels[j];
+                    //System.out.println("Intersect: " + c1.name + " with " + c2.name);
 
+                    Circle circle1 = c1.getCircle(time);
+                    Circle circle2 = c2.getCircle(time);
+                    CircleCircleIntersection intersection = new CircleCircleIntersection(circle1, circle2);
+
+                    int relevantIntersections = 0;
+                    for (Vector2 v : intersection.getIntersectionPoints())
+                        if (isVectorOnTable(v))
+                            relevantIntersections++;
+
+                    if (relevantIntersections == 0)
+                        circlesDisjunct = true;
+
+                    intersections[intersectionCounter++] = intersection;
+                }
+            }
+
+            // update time
             time += stepSize;
+
+            // continue only if all circles have an intersection with each other
+            if (circlesDisjunct)
+                continue;
+
+            // check if intersections are on table
+            for (CircleCircleIntersection intersection : intersections) {
+                for (Vector2 v : intersection.getIntersectionPoints()) {
+                    drawCross(v, Color.RED);
+                }
+            }
         }
+    }
+
+    boolean isVectorOnTable(Vector2 v) {
+        return (v.x >= 0 && v.x < tableLength) && (v.y >= 0 && v.y < tableWidth);
     }
 
     /**
@@ -106,19 +167,33 @@ public class DIWLAlgorithm extends BaseTDAO {
         }
     }
 
+    public void drawCross(Vector2 v, Color color) {
+        drawCross(v, color, 3);
+    }
+
+    public void drawCross(Vector2 vector, Color color, double size) {
+        double hs = size / 2d;
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        Vector2 v = convertToTableSpace(vector);
+        gc.setStroke(color);
+        gc.setFill(color);
+        gc.strokeLine(v.x - hs, v.y - hs, v.x + hs, v.y + hs);
+        gc.strokeLine(v.x - hs, v.y + hs, v.x + hs, v.y - hs);
+    }
+
     public void drawCircle(Circle circle, Color color)
     {
         if(circle == null)
             return;
 
         Vector2 c = convertToTableSpace(circle.c);
-        double r = convertToTableSpace(circle.r);
+        double d = convertToTableSpace(circle.r) * 2d;
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(2);
         gc.setStroke(color);
-        double hr = r / 2d;
-        gc.strokeOval(c.x - hr, c.y - hr, r, r);
+        double r = d / 2d;
+        gc.strokeOval(c.x - r, c.y - r, d, d);
     }
 
     public static int getPeekPosition(float[] f)
