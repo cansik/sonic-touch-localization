@@ -4,6 +4,8 @@ import ch.bildspur.sonic.Vector2d;
 import ch.bildspur.sonic.util.geometry.Circle;
 import ch.bildspur.sonic.util.geometry.CircleCircleIntersection;
 import ch.bildspur.sonic.util.geometry.Vector2;
+import ch.fhnw.util.DoubleList;
+import ch.fhnw.util.Pair;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import main.analyzer.AnalyzerController;
@@ -43,9 +45,10 @@ public class DIWLAlgorithm extends BaseTDAO {
         // get the shortest intersection points of all circles (on table)
         // calculate emphasis of intersection points
         // finally we have a position
-        runApproximation(channels, 500, 5);
+        Vector2 centroid = runApproximation(channels, 500, 3);
+        drawCross(centroid, Color.GREEN);
 
-        return new Vector2(0, 0);
+        return centroid;
     }
 
     void circleTest() {
@@ -63,18 +66,25 @@ public class DIWLAlgorithm extends BaseTDAO {
             drawCross(new Vector2(v.x, v.y), Color.GREEN);
     }
 
-    void runApproximation(Channel[] channels, float maxTime, float stepSize)
+    Vector2 runApproximation(Channel[] channels, float maxTime, float stepSize)
     {
         // todo: find better cancel criteria (table size)
         float time = stepSize;
+
+        // best values
+        double minDistances = Double.MAX_VALUE;
+        Vector2 minCentroidPoint = Vector2.NULL;
 
         // gauss
         int n = channels.length - 1;
         int intersectionCount = (int) ((Math.pow(n, 2) + n) / 2);
         CircleCircleIntersection[] intersections = new CircleCircleIntersection[intersectionCount];
 
+        int iterationCount = 0;
+
         while(time < maxTime)
         {
+            iterationCount++;
             // draw circle for debugging
             for(Channel c : channels) {
                 Color color = new Color(c.color.getRed(), c.color.getGreen(), c.color.getBlue(), 0.5f);
@@ -114,13 +124,77 @@ public class DIWLAlgorithm extends BaseTDAO {
             if (circlesDisjunct)
                 continue;
 
-            // check if intersections are on table
+            // draw relevant intersection points
             for (CircleCircleIntersection intersection : intersections) {
                 for (Vector2 v : intersection.getIntersectionPoints()) {
                     drawCross(v, Color.RED);
                 }
             }
+
+            // calculate best centroid Pair<Distance, Point>
+            Pair<Double, Vector2> result = getCentroid(intersections);
+
+            if (minDistances > result.first) {
+                minDistances = result.first;
+                minCentroidPoint = result.second;
+            }
         }
+
+        System.out.println("Iteration: " + iterationCount + "\t | ");
+
+        return minCentroidPoint;
+    }
+
+    Pair<Double, Vector2> getCentroid(CircleCircleIntersection[] intersections) {
+        // todo: cleanup this code!
+
+        // calculate big centroid
+        Vector2 fullCentroid = Vector2.NULL;
+        int fullCount = 0;
+        for (CircleCircleIntersection intersection : intersections) {
+            for (Vector2 v : intersection.getIntersectionPoints()) {
+                fullCentroid = fullCentroid.add(v);
+                fullCount++;
+            }
+        }
+        fullCentroid = fullCentroid.scale(1d / (double) fullCount);
+        drawCross(fullCentroid, Color.BLUE);
+
+        // foreach intersection take nearest intersection point
+        Vector2[] nearest = new Vector2[intersections.length];
+        for (int i = 0; i < intersections.length; i++) {
+            Vector2[] points = intersections[i].getIntersectionPoints();
+
+            // if tangent
+            if (points.length == 1) {
+                nearest[i] = points[0];
+                continue;
+            }
+
+            // if two intersections
+            double d1 = fullCentroid.distance(points[0]);
+            double d2 = fullCentroid.distance(points[1]);
+
+            if (d1 < d2)
+                nearest[i] = points[0];
+            else
+                nearest[i] = points[1];
+        }
+
+        // calculate centroid for all relevant and nearest points
+        Vector2 centroid = Vector2.NULL;
+        for (Vector2 v : nearest)
+            centroid = centroid.add(v);
+        centroid = centroid.scale(1d / (double) nearest.length);
+
+        // calculate distance for each point to centroid and sum up (fitness)
+        double fitness = 0;
+        for (Vector2 v : nearest)
+            fitness += centroid.distance(v);
+
+        System.out.println("Fitness: " + fitness + " | " + centroid.toString());
+
+        return new Pair<>(fitness, centroid);
     }
 
     boolean isVectorOnTable(Vector2 v) {

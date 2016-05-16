@@ -389,6 +389,7 @@ public class Controller implements IGestureHandler {
     }
 
     public void btnExit_Clicked(ActionEvent actionEvent) {
+
         Platform.exit();
     }
 }

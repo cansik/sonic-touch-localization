@@ -72,6 +72,11 @@ public final class Vector2 implements Serializable {
 		return new Vector2(mod * cos(ang), mod * sin(ang));
 	}
 
+	public double distance(Vector2 v) {
+		Vector2 o = sub(v);
+		return Math.abs(Math.sqrt(Math.pow(o.x, 2) + Math.pow(o.y, 2)));
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
