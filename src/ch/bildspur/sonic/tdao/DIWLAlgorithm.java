@@ -45,10 +45,10 @@ public class DIWLAlgorithm extends BaseTDAO {
         // get the shortest intersection points of all circles (on table)
         // calculate emphasis of intersection points
         // finally we have a position
-        Vector2 centroid = runApproximation(channels, 500, 3);
+        Vector2 centroid = runApproximation(channels, 500, 10f);
         drawCross(centroid, Color.GREEN);
 
-        return centroid;
+        return convertToTableSpace(centroid);
     }
 
     void circleTest() {
@@ -180,6 +180,10 @@ public class DIWLAlgorithm extends BaseTDAO {
             else
                 nearest[i] = points[1];
         }
+
+        // draw points for debugging
+        for (Vector2 v : nearest)
+            drawCross(v, Color.CYAN);
 
         // calculate centroid for all relevant and nearest points
         Vector2 centroid = Vector2.NULL;

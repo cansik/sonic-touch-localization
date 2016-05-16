@@ -98,6 +98,7 @@ public class AnalyzerController {
     public void runAutoAlgorithm()
     {
         clearTable();
+        drawGrid();
         String algo = (String)cbAutoAlgorithm.getValue();
         switch (algo)
         {
@@ -137,7 +138,6 @@ public class AnalyzerController {
                 algorithm = (a, b) -> an.xcrossDSPDelay(a, b);
                 break;
         }
-
 
         return algorithm;
     }
@@ -213,14 +213,6 @@ public class AnalyzerController {
         BaseTDAO algo = new DiagonalTDAO();
         fillAlgorithmInfos(algo);
         Vector2 result = algo.run();
-
-        GraphicsContext gc = visTable.getGraphicsContext2D();
-
-        // draw grid
-        gc.setStroke(Color.DARKGRAY);
-        gc.strokeLine(visTable.getWidth() / 2d, 0, visTable.getWidth() / 2d, visTable.getHeight());
-        gc.strokeLine(0, visTable.getHeight() / 2d, visTable.getWidth(), visTable.getHeight() / 2d);
-
         analyzeResult(result.x, result.y);
     }
 
@@ -245,6 +237,15 @@ public class AnalyzerController {
         algo.tableWidth = 0.75;
 
         algo.canvas = visTable;
+    }
+
+    public void drawGrid() {
+        GraphicsContext gc = visTable.getGraphicsContext2D();
+
+        // draw grid
+        gc.setStroke(Color.DARKGRAY);
+        gc.strokeLine(visTable.getWidth() / 2d, 0, visTable.getWidth() / 2d, visTable.getHeight());
+        gc.strokeLine(0, visTable.getHeight() / 2d, visTable.getWidth(), visTable.getHeight() / 2d);
     }
 
     public void btnLoad_Clicked(ActionEvent actionEvent) {
@@ -334,6 +335,9 @@ public class AnalyzerController {
     void clearTable() {
         GraphicsContext gc = visTable.getGraphicsContext2D();
         gc.clearRect(0, 0, visTable.getWidth(), visTable.getHeight());
+        gc.setFill(Color.WHITE);
+        gc.fillRect(0, 0, visTable.getWidth(), visTable.getHeight());
+
         // draw border
         gc.setStroke(Color.BLACK);
         gc.strokeRect(1, 1, visTable.getWidth() - 2, visTable.getHeight() - 2);
@@ -487,6 +491,12 @@ public class AnalyzerController {
                 minDistance = distance;
             }
         }
+
+        // draw vector from center to prediction
+        GraphicsContext gc = visTable.getGraphicsContext2D();
+        gc.setStroke(Color.BLUE);
+        gc.strokeLine(fixPoints.get("center").getX(), fixPoints.get("center").getY(), prediction.getX(), prediction.getY());
+
 
         // output result
         log("Prediction: " + minKey + " (" + minDistance + ")");
