@@ -1,6 +1,9 @@
 package main.calibration;
 
 import ch.bildspur.sonic.util.geometry.Vector2;
+import ch.fhnw.util.Pair;
+import javafx.animation.KeyValue;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.scene.canvas.Canvas;
@@ -9,9 +12,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import main.Main;
 
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -104,12 +105,61 @@ public class CalibratorController {
         }
     }
 
+    public void showTimePerSquare(String edgePoint, int widthResolution, int heightResolution) {
+        clearTable();
+        System.out.println("showing time points for " + edgePoint);
+
+        double widthStep = visTable.getWidth() / (double) widthResolution;
+        double heightStep = visTable.getHeight() / (double) heightResolution;
+
+        Vector2 measurePoint = edgePoints.get(edgePoint);
+
+        List<Pair<Vector2, Double>> distances = new ArrayList<>();
+        double maxDistance = 0;
+
+        // calculate times
+        for (int y = 0; y < heightResolution; y++) {
+            for (int x = 0; x < widthResolution; x++) {
+                // get point
+                double currentX = ((double) x * widthStep) + (widthStep / 2);
+                double currentY = ((double) y * heightStep) + (heightStep / 2);
+
+                Vector2 pos = new Vector2(currentX, currentY);
+
+                // calculate time
+                double d = pos.distance(measurePoint);
+                if (maxDistance < d) maxDistance = d;
+
+                distances.add(new Pair(new Vector2(x, y), d));
+            }
+        }
+
+        // draw squares
+        for (Pair<Vector2, Double> points : distances) {
+            Vector2 pos = points.first;
+            double distance = points.second;
+            double normalizedDistance = distance / maxDistance;
+
+            Color c = new Color(Color.MAGENTA.getRed(), Color.MAGENTA.getGreen(), Color.MAGENTA.getBlue(), normalizedDistance);
+
+            // draw squares
+            Platform.runLater(() -> {
+                GraphicsContext gc = visTable.getGraphicsContext2D();
+                gc.setFill(c);
+                gc.fillRect(pos.x * widthStep, pos.y * heightStep, widthStep, heightStep);
+            });
+        }
+    }
+
     public double getRandomDouble(double min, double max)
     {
         return ThreadLocalRandom.current().nextDouble(min, max);
     }
 
     public void OnKeyPressed(KeyEvent event) {
+        int widthResolution = 20;
+        int heightResolution = 20;
+
         switch (event.getCode())
         {
             case SPACE:
@@ -118,6 +168,18 @@ public class CalibratorController {
                 break;
             case A:
                 System.out.println("A");
+                break;
+            case DIGIT1:
+                showTimePerSquare("LL", widthResolution, heightResolution);
+                break;
+            case DIGIT2:
+                showTimePerSquare("UL", widthResolution, heightResolution);
+                break;
+            case DIGIT3:
+                showTimePerSquare("UR", widthResolution, heightResolution);
+                break;
+            case DIGIT4:
+                showTimePerSquare("LR", widthResolution, heightResolution);
                 break;
         }
     }

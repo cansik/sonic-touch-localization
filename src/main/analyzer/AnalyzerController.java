@@ -78,7 +78,7 @@ public class AnalyzerController {
 
         // add delay-algorithms
         lagDetectionAlgorithms.add("threshold");
-        lagDetectionAlgorithms.add("peek");
+        lagDetectionAlgorithms.add("peak");
         lagDetectionAlgorithms.add("cross-correlation");
         lagDetectionAlgorithms.add("xcross");
 
@@ -128,7 +128,7 @@ public class AnalyzerController {
                 float threshold = Main.inputController.getGestureRecognizer().getThreshold();
                 algorithm = (a, b) -> (float) an.extendedThresholdAnalyzer(a, b, threshold);
                 break;
-            case "peek":
+            case "peak":
                 algorithm = (a, b) -> (float) an.peekAnalyzer(a, b);
                 break;
             case "cross-correlation":
@@ -669,26 +669,26 @@ public class AnalyzerController {
             return;
         }
 
-        int peek = DIWLAlgorithm.getPeekPosition(bufferLL.getBuffer());
+        int peak = DIWLAlgorithm.getPeekPosition(bufferLL.getBuffer());
 
-        float gain = zoomBuffer(bufferLL, peek, visLeftLower, Color.BLUE, -1);
-        zoomBuffer(bufferLU, peek, visLeftUpper, Color.RED, gain);
-        zoomBuffer(bufferRU, peek, visRightUpper, Color.GREEN, gain);
-        zoomBuffer(bufferRL, peek, visRightLower, Color.ORANGE, gain);
+        float gain = zoomBuffer(bufferLL, peak, visLeftLower, Color.BLUE, -1);
+        zoomBuffer(bufferLU, peak, visLeftUpper, Color.RED, gain);
+        zoomBuffer(bufferRU, peak, visRightUpper, Color.GREEN, gain);
+        zoomBuffer(bufferRL, peak, visRightLower, Color.ORANGE, gain);
         isZoomed = true;
     }
 
-    public float zoomBuffer(LoopRingBuffer lrp, int peek, Canvas vis, Color c, float gain)
+    public float zoomBuffer(LoopRingBuffer lrp, int peak, Canvas vis, Color c, float gain)
     {
-        // show zoomed view to peek point
+        // show zoomed view to peak point
         int sampleOffset = 100;
 
         float[] data = lrp.getBuffer();
-        float[] peekData = getPart(data, peek-sampleOffset, sampleOffset * 2);
+        float[] peekData = getPart(data, peak - sampleOffset, sampleOffset * 2);
 
-        // calculate own peek
+        // calculate own peak
         int p = DIWLAlgorithm.getPeekPosition(data);
-        int peekOffset = (p - peek) + sampleOffset;
+        int peekOffset = (p - peak) + sampleOffset;
 
         float gainFactor = gain;
         if(gain < 0)
@@ -706,7 +706,7 @@ public class AnalyzerController {
             // draw wave
             drawLineBuffer(peekData, vis, c, k, 2);
 
-            // draw peek indicator
+            // draw peak indicator
             GraphicsContext gc = vis.getGraphicsContext2D();
             gc.setStroke(Color.MAGENTA);
             double space = vis.getWidth() / (float)peekData.length;

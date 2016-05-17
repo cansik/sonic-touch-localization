@@ -45,7 +45,7 @@ public class DIWLAlgorithm extends BaseTDAO {
         // get the shortest intersection points of all circles (on table)
         // calculate emphasis of intersection points
         // finally we have a position
-        Vector2 centroid = runApproximation(channels, 500, 10f);
+        Vector2 centroid = runApproximation(channels, 500, 0.01f);
         drawCross(centroid, Color.GREEN);
 
         return convertToTableSpace(centroid);
@@ -88,7 +88,7 @@ public class DIWLAlgorithm extends BaseTDAO {
             // draw circle for debugging
             for(Channel c : channels) {
                 Color color = new Color(c.color.getRed(), c.color.getGreen(), c.color.getBlue(), 0.5f);
-                drawCircle(c.getCircle(time), color);
+                //drawCircle(c.getCircle(time), color);
             }
 
             boolean circlesDisjunct = false;
