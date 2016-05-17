@@ -3,6 +3,9 @@ package main;
 import ch.bildspur.sonic.*;
 import ch.fhnw.ether.audio.JavaSoundSource;
 import ch.fhnw.ether.audio.fx.AudioGain;
+import ch.fhnw.ether.audio.fx.DCRemove;
+import ch.fhnw.ether.audio.fx.LowPass;
+import ch.fhnw.ether.audio.fx.OnsetDetect;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -116,7 +119,7 @@ public class Controller implements IGestureHandler {
         levels = new Levels();
         gain = new AudioGain();
 
-        recorder = new LaneRecorder(source, gain, levels);
+        recorder = new LaneRecorder(source, new DCRemove(), gain, new LowPass(0), levels);
         gr = new GestureRecognizer(this);
         recorder.getProgram().addLast(gr);
 
