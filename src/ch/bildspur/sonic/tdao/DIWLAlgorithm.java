@@ -45,7 +45,7 @@ public class DIWLAlgorithm extends BaseTDAO {
         // get the shortest intersection points of all circles (on table)
         // calculate emphasis of intersection points
         // finally we have a position
-        Vector2 centroid = runApproximation(channels, 500, 0.01f);
+        Vector2 centroid = runApproximation(channels, 0.01f);
         drawCross(centroid, Color.GREEN);
 
         return convertToTableSpace(centroid);
@@ -66,7 +66,7 @@ public class DIWLAlgorithm extends BaseTDAO {
             drawCross(new Vector2(v.x, v.y), Color.GREEN);
     }
 
-    Vector2 runApproximation(Channel[] channels, float maxTime, float stepSize)
+    Vector2 runApproximation(Channel[] channels, float stepSize)
     {
         // todo: find better cancel criteria (table size)
         float time = stepSize;
@@ -82,7 +82,11 @@ public class DIWLAlgorithm extends BaseTDAO {
 
         int iterationCount = 0;
 
-        while(time < maxTime)
+        // cancel criteria
+        double maxRadius = Math.sqrt(Math.pow(tableLength, 2) + Math.pow(tableWidth, 2));
+        boolean running = true;
+
+        while (running)
         {
             iterationCount++;
             // draw circle for debugging
@@ -104,6 +108,10 @@ public class DIWLAlgorithm extends BaseTDAO {
                     Circle circle1 = c1.getCircle(time);
                     Circle circle2 = c2.getCircle(time);
                     CircleCircleIntersection intersection = new CircleCircleIntersection(circle1, circle2);
+
+                    // check if iteration can stop
+                    if (circle1.r > maxRadius || circle2.r > maxRadius)
+                        running = false;
 
                     int relevantIntersections = 0;
                     for (Vector2 v : intersection.getIntersectionPoints())
