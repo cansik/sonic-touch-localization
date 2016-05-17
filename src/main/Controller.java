@@ -69,6 +69,8 @@ public class Controller implements IGestureHandler {
     float[] f;
     float[] g;
 
+    LaneRecorder recorder;
+
     AnalyzerController analyzerController;
 
     public void initialize()
@@ -114,13 +116,17 @@ public class Controller implements IGestureHandler {
         levels = new Levels();
         gain = new AudioGain();
 
-        LaneRecorder recorder = new LaneRecorder(source, gain, levels);
+        recorder = new LaneRecorder(source, gain, levels);
         gr = new GestureRecognizer(this);
         recorder.getProgram().addLast(gr);
 
         sliderThreshold.setValue(gr.getThreshold());
 
-        SwingUtilities.invokeLater(recorder::start);
+        Thread t = new Thread(recorder::start);
+        t.setDaemon(true);
+        t.start();
+
+        //SwingUtilities.invokeLater(recorder::start);
     }
 
     void drawTableResult(int thresholdResult, float crossBourke)
@@ -389,7 +395,7 @@ public class Controller implements IGestureHandler {
     }
 
     public void btnExit_Clicked(ActionEvent actionEvent) {
-
+        recorder.stop();
         Platform.exit();
     }
 }
