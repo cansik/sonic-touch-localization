@@ -747,7 +747,6 @@ public class AnalyzerController {
         drawBuffer(bufferLL.getBuffer(), visLeftLower, Color.BLUE, lastGain);
         drawBuffer(filteredData, visLeftUpper, Color.BLUE, lastGain);
 
-
         // caluclate it for all
         bufferLL = new LoopRingBuffer(median.filterAndStretch(bufferLL.getBuffer(), stretchValue));
         bufferLU = new LoopRingBuffer(median.filterAndStretch(bufferLU.getBuffer(), stretchValue));
