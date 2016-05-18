@@ -63,7 +63,7 @@ public class AnalyzerController {
     ObservableList<String> lagDetectionAlgorithms;
     ObservableList<String> algorithms;
 
-    public static float SONIC_SPEED = 343.2f; // m/s
+    public static float SONIC_SPEED = 3960; //343.2f; // m/s
     public static float SAMPLING_RATE = 96000; // hz
 
     OneChannelLTM oneLTM = new OneChannelLTM();

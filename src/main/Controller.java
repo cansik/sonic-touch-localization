@@ -58,7 +58,7 @@ public class Controller implements IGestureHandler {
     AudioGain gain;
 
     int bufferSize = 30000;
-    int thresholdSampleSize = 5000;
+    int thresholdSampleSize = 10000;
 
     LoopRingBuffer bufferLL = new LoopRingBuffer(bufferSize);
     LoopRingBuffer bufferLU = new LoopRingBuffer(bufferSize);
@@ -111,7 +111,7 @@ public class Controller implements IGestureHandler {
         System.out.println(Arrays.toString(sources));
 
         // 8 channel
-        source = new JavaSoundSource(8, 96000, 256 * 8 * 3);
+        source = new JavaSoundSource(8, 96000, 256 * 8 * 10);
 
         // 2 channel
         //source = new JavaSoundSource(2, 96000, 256);
