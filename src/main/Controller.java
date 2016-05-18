@@ -398,7 +398,8 @@ public class Controller implements IGestureHandler {
     }
 
     public void btnExit_Clicked(ActionEvent actionEvent) {
-        recorder.stop();
+        if (recorder != null)
+            recorder.stop();
         Platform.exit();
     }
 }

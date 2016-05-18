@@ -1,6 +1,7 @@
 package main.analyzer;
 
 import ch.bildspur.sonic.*;
+import ch.bildspur.sonic.filter.MedianFilter;
 import ch.bildspur.sonic.ltm.OneChannelLTM;
 import ch.bildspur.sonic.ltm.util.DSP;
 import ch.bildspur.sonic.tdao.BaseTDAO;
@@ -27,6 +28,8 @@ import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import main.Main;
+import marf.FeatureExtraction.FeatureExtractionException;
+import marf.Preprocessing.PreprocessingException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -46,7 +49,6 @@ public class AnalyzerController {
     public Canvas visRightUpper;
     public Canvas visRightLower;
     public Canvas visTable;
-    public ProgressBar progressBar;
     public Label dataSetName;
     public TextField dataPointLabelLL;
     public TextArea tbConsole;
@@ -67,6 +69,8 @@ public class AnalyzerController {
     OneChannelLTM oneLTM = new OneChannelLTM();
 
     boolean isZoomed = false;
+
+    float lastGain = 1.0f;
 
     public void initialize() {
         Main.analyzeController = this;
@@ -318,6 +322,7 @@ public class AnalyzerController {
             if (max < bufferRL.get(i)) max = bufferRL.get(i);
         }
         float gainFactor = 1.0f / max;
+        lastGain = gainFactor;
 
         // visualize data
         Platform.runLater(() -> {
@@ -727,5 +732,28 @@ public class AnalyzerController {
                 result[i-start] = 0;
         }
         return result;
+    }
+
+    public void onBtnMarf_Clicked(ActionEvent actionEvent) throws PreprocessingException, FeatureExtractionException {
+        AudioFeatureExtractor extractor = new AudioFeatureExtractor();
+        extractor.extract(bufferLL.getBuffer());
+    }
+
+    public void onMedian_Clicked(ActionEvent actionEvent) {
+        MedianFilter median = new MedianFilter(101);
+        float stretchValue = 0.25f;
+        float[] filteredData = median.filterAndStretch(bufferLL.getBuffer(), stretchValue);
+
+        drawBuffer(bufferLL.getBuffer(), visLeftLower, Color.BLUE, lastGain);
+        drawBuffer(filteredData, visLeftUpper, Color.BLUE, lastGain);
+
+
+        // caluclate it for all
+        bufferLL = new LoopRingBuffer(median.filterAndStretch(bufferLL.getBuffer(), stretchValue));
+        bufferLU = new LoopRingBuffer(median.filterAndStretch(bufferLU.getBuffer(), stretchValue));
+        bufferRL = new LoopRingBuffer(median.filterAndStretch(bufferRL.getBuffer(), stretchValue));
+        bufferRU = new LoopRingBuffer(median.filterAndStretch(bufferRU.getBuffer(), stretchValue));
+
+        drawAllBuffer("Median");
     }
 }

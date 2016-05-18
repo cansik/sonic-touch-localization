@@ -39,7 +39,6 @@
       </ToolBar>
       <Canvas fx:id="visTable" height="161.0" layoutX="111.0" layoutY="380.0" width="322.0" />
       <Label layoutX="36.0" layoutY="452.0" text="TABLE:" />
-      <ProgressBar fx:id="progressBar" layoutY="588.0" prefHeight="20.0" prefWidth="759.0" progress="0.0" />
       <TextField fx:id="dataPointLabelLL" editable="false" layoutX="38.0" layoutY="95.0" prefHeight="21.0" prefWidth="83.0">
          <font>
             <Font size="10.0" />
@@ -51,10 +50,16 @@
          </font>
       </TextArea>
       <Button layoutX="9.0" layoutY="561.0" mnemonicParsing="false" onAction="#oneLTM_Clicked" text="oneLTM Calibration" />
-      <Button layoutX="57.0" layoutY="56.0" mnemonicParsing="false" onAction="#OnZoom_Clicked" text="Zoom">
+       <Button layoutX="79.0" layoutY="56.0" mnemonicParsing="false" onAction="#OnZoom_Clicked" text="Zoom">
          <font>
             <Font size="10.0" />
          </font>
       </Button>
+       <Button layoutX="31.0" layoutY="56.0" mnemonicParsing="false" onAction="#onBtnMarf_Clicked" text="MARF">
+           <font>
+               <Font size="10.0"/>
+           </font>
+       </Button>
+       <Button layoutX="14.0" layoutY="519.0" mnemonicParsing="false" onAction="#onMedian_Clicked" text="Median"/>
    </children>
 </AnchorPane>
