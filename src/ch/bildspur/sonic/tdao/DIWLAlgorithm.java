@@ -48,6 +48,10 @@ public class DIWLAlgorithm extends BaseTDAO {
         Vector2 centroid = runApproximation(channels, 0.01f);
         drawCross(centroid, Color.GREEN);
 
+        // print result
+        controller.lastPoint = centroid;
+        controller.log("P: (" + centroid.x + "|" + centroid.y + ")");
+
         return convertToTableSpace(centroid);
     }
 

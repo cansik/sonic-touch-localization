@@ -1,0 +1,28 @@
+New Experiment
+linear | threshold
+center right	1.71500681350588	0.2816122438542697
+
+linear | peak
+center right	1.843414978206259	0.5111904777125234
+
+linear | cross-correlation
+center right	1.4542993275990495	0.4216938780728652
+
+diagonal | threshold
+lower right	1.8289104456124758	0.5838213765701564
+
+diagonal | peak
+upper right	1.9724751420044584	0.07046882583518876
+
+diagonal | cross-correlation
+upper left	0.22794655857460344	-4.514900568017823
+
+diwl | threshold
+upper left	0.0	0.0
+
+diwl | peak
+upper left	0.0	0.0
+
+diwl | cross-correlation
+upper left	0.0	0.0
+

@@ -57,9 +57,17 @@
       </Button>
        <Button layoutX="31.0" layoutY="56.0" mnemonicParsing="false" onAction="#onBtnMarf_Clicked" text="MARF">
            <font>
-               <Font size="10.0"/>
+               <Font size="10.0" />
            </font>
        </Button>
-       <Button layoutX="14.0" layoutY="519.0" mnemonicParsing="false" onAction="#onMedian_Clicked" text="Median"/>
+       <Button layoutX="14.0" layoutY="519.0" mnemonicParsing="false" onAction="#onMedian_Clicked" text="Median" />
+      <Button layoutX="695.0" layoutY="561.0" mnemonicParsing="false" onAction="#onCopyLastPoint" text="Copy" />
+      <Button layoutX="633.0" layoutY="561.0" mnemonicParsing="false" onAction="#onClearOutput" text="Clear" />
+      <Button layoutX="527.0" layoutY="561.0" mnemonicParsing="false" onAction="#onRunExperimentTest" text="Experiment" />
+      <Button layoutX="61.0" layoutY="40.0" mnemonicParsing="false" onAction="#onPlayClicked" prefHeight="11.0" prefWidth="32.0" text="&gt;">
+         <font>
+            <Font size="9.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>

@@ -77,7 +77,11 @@ public class LinearTDAO extends BaseTDAO {
         double meanX = (width * topPer + width * bottomPer) / 2; //+ width * diagnoal1 + width * diagnoal2) / 4;
         double meanY = (height * rightPer + height * leftPer) / 2; // + height * diagnoal1 + height * diagnoal2) / 4;
 
-        // log("P: (" + meanX + "|" + meanY + ")");
+        double undMeanX = (tableLength * topPer + tableLength * bottomPer) / 2;
+        double undMeanY =  (tableWidth * rightPer + tableWidth * leftPer) / 2;
+
+        controller.lastPoint = new Vector2(undMeanX, undMeanY);
+        controller.log("P: (" + undMeanX + "|" + undMeanY + ")");
 
         // draw arrow
         gc.setStroke(Color.BLUE);

@@ -46,6 +46,10 @@ public class DiagonalTDAO extends BaseTDAO {
         drawLine(result.s, F, Color.CYAN);
         drawVector(result.s, "X", Color.RED);
 
+        // print result
+        controller.lastPoint = result.s;
+        controller.log("P: (" + result.s.x + "|" + result.s.y + ")");
+
         return convertToTableSpace(result.s);
     }
 

@@ -15,6 +15,7 @@ import ch.fhnw.ether.audio.URLAudioSource;
 import ch.fhnw.ether.media.IScheduler;
 import ch.fhnw.ether.media.RenderCommandException;
 import ch.fhnw.ether.media.RenderProgram;
+import ch.fhnw.util.Pair;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -23,6 +24,8 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
@@ -34,9 +37,13 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import sun.audio.AudioData;
+import sun.audio.AudioDataStream;
+import sun.audio.AudioPlayer;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -63,14 +70,17 @@ public class AnalyzerController {
     ObservableList<String> lagDetectionAlgorithms;
     ObservableList<String> algorithms;
 
-    public static float SONIC_SPEED = 3960; //343.2f; // m/s
-    public static float SAMPLING_RATE = 96000; // hz
+    public static float SONIC_SPEED =  343.2f; //3960; //343.2f; // m/s
+    public static float SAMPLING_RATE = 44100; //96000; // hz
 
     OneChannelLTM oneLTM = new OneChannelLTM();
 
     boolean isZoomed = false;
 
     float lastGain = 1.0f;
+
+    public Vector2 lastPoint = Vector2.NULL;
+    public String lastPrediction = "none";
 
     public void initialize() {
         Main.analyzeController = this;
@@ -240,6 +250,8 @@ public class AnalyzerController {
         algo.tableLength = 1.5;
         algo.tableWidth = 0.75;
 
+        algo.controller = this;
+
         algo.canvas = visTable;
     }
 
@@ -264,7 +276,7 @@ public class AnalyzerController {
         }
     }
 
-    void log(String message) {
+    public void log(String message) {
         Platform.runLater(() -> {
             tbConsole.setText(tbConsole.getText() + "\n" + "> " + message);
             tbConsole.setScrollTop(Double.MAX_VALUE);
@@ -505,6 +517,8 @@ public class AnalyzerController {
 
         // output result
         log("Prediction: " + minKey + " (" + minDistance + ")");
+
+        lastPrediction = minKey;
     }
 
     public void btnLoadJSON_Clicked(ActionEvent actionEvent) {
@@ -754,5 +768,73 @@ public class AnalyzerController {
         bufferRU = new LoopRingBuffer(median.filterAndStretch(bufferRU.getBuffer(), stretchValue));
 
         drawAllBuffer("Median");
+    }
+
+    public void onCopyLastPoint(ActionEvent actionEvent) {
+        final Clipboard clipboard = Clipboard.getSystemClipboard();
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(lastPoint.x + "\t" + lastPoint.y);
+        clipboard.setContent(content);
+    }
+
+    public void onClearOutput(ActionEvent actionEvent) {
+        clearLog();
+    }
+
+    public void onRunExperimentTest(ActionEvent actionEvent) throws InterruptedException, IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("New Experiment\n");
+
+        for(String algorithm : algorithms.filtered(x -> !x.equals("oneLTM")))
+        {
+            for(String lagAlgo : lagDetectionAlgorithms.filtered(x -> !x.equals("xcross")))
+            {
+                sb.append(algorithm + " | " + lagAlgo + "\n");
+
+                //Platform.runLater(() -> {
+                cbAutoAlgorithm.setValue(algorithm);
+                cbLagDetection.setValue(lagAlgo);
+                //});
+
+                Thread t = new Thread(() -> {
+                    // wait for setting algorithm
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    // run algorithm
+                    runAutoAlgorithm();
+
+                    // collect result
+                    sb.append(lastPrediction + "\t");
+                    sb.append(lastPoint.x + "\t");
+                    sb.append(lastPoint.y + "\n");
+                });
+                t.start();
+                t.join();
+
+                sb.append("\n");
+            }
+        }
+
+        // save sb
+        Files.write(Paths.get("experiment/test.txt"), sb.toString().getBytes());
+        System.out.println("Experiment done!");
+    }
+
+    public void onPlayClicked(ActionEvent actionEvent) {
+        float[] result = bufferLL.getBuffer();
+        byte[] barray = new byte[result.length];
+        for (int i = 0; i< result.length; i++) {
+            barray[i] = (byte)result[i];
+        }
+        // Create the AudioData object from the byte array
+        AudioData audioData = new AudioData(barray);
+        // Create an AudioDataStream to play back
+        AudioDataStream audioStream = new AudioDataStream(audioData);
+        // Play the sound
+        AudioPlayer.player.start(audioStream);
     }
 }

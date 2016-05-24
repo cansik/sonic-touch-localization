@@ -60,6 +60,11 @@ public class LoopRingBuffer {
         return buffer.clone();
     }
 
+    public float[] getNormalizedBuffer()
+    {
+        return buffer.clone();
+    }
+
     public int size()
     {
         return buffer.length;
