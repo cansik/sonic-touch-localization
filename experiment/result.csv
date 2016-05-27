@@ -1,46 +1,10 @@
-algorithm	delay	prediction	x	y	signal	x	y
-linear	threshold	lower left	0.020408137314984698	1.1007007060840288	center bottom	161.0	161.0
-linear	peak	center top	0.7169251688916126	0.11234692943339447	center bottom	161.0	161.0
-linear	cross-correlation	center top	0.7110884339901326	0.1551496520442487	center bottom	161.0	161.0
-diagonal	threshold	upper left	-0.06570850039719361	-1.2477161101234833	center bottom	161.0	161.0
-diagonal	peak	center bottom	0.7130212146486608	0.9623101202859792	center bottom	161.0	161.0
-diagonal	cross-correlation	center bottom	0.7891540080190653	0.6795311734816192	center bottom	161.0	161.0
-diwl	threshold	upper left	0.0	0.0	center bottom	161.0	161.0
-diwl	peak	upper left	0.0	0.0	center bottom	161.0	161.0
-diwl	cross-correlation	upper left	0.0	0.0	center bottom	161.0	161.0
-linear	threshold	lower left	0.0476462335218919	1.061789140074161	center top
-linear	peak	center	0.9348299385468706	0.5364829989409501	center top
-linear	cross-correlation	center bottom	0.8686802763300958	0.6123605526601916	center top
-diagonal	threshold	upper left	-0.03525538304903125	-1.160707203414449	center top
-diagonal	peak	center top	0.9566461534339556	0.0139130371575088	center top
-diagonal	cross-correlation	center top	0.7978548986899687	-0.016540080190653172	center top
-diwl	threshold	upper left	0.0	0.0	center top
-diwl	peak	upper left	0.0	0.0	center top
-diwl	cross-correlation	upper left	0.0	0.0	center top
-linear	threshold	lower left	-3.1742314320951364	4.248646396282309	center
-linear	peak	center	0.7110884339901324	0.41002040940888074	center
-linear	cross-correlation	center	0.7227619037930927	0.421693879211841	center
-diagonal	threshold	upper left	-3.637424120803031	-8.28673666288432	center
-diagonal	peak	center	0.706495546645483	0.29669198396186947	center
-diagonal	cross-correlation	center	0.7173716599841122	0.3967522266772585	center
-diwl	threshold	upper left	0.0	0.0	center
-diwl	peak	center	0.6997937663890226	0.28611361863791646	center
-diwl	cross-correlation	center	0.6435840711830587	0.25658353724741684	center
-linear	threshold	center	0.8764625895320692	0.2524285670689175	lower right
-linear	peak	center right	1.37842179105936	0.2835578198768114	lower right
-linear	cross-correlation	center right	1.2772517194337043	0.2465918321674373	lower right
-diagonal	threshold	center bottom	0.8913894734021802	0.6490780561334574	lower right
-diagonal	peak	lower right	1.4525969216754495	0.5794709307662299	lower right
-diagonal	cross-correlation	lower right	1.426494249662739	0.6229753841207467	lower right
-diwl	threshold	upper left	0.0	0.0	lower right
-diwl	peak	upper left	0.0	0.0	lower right
-diwl	cross-correlation	center right	1.4028500352654485	0.4333744413633185	lower right
-linear	threshold	lower right	2.680013674089427	1.550129293497998	lower right
-linear	peak	center right	1.3920408391628134	0.25826530197039754	lower right
-linear	cross-correlation	center right	1.3472925382514658	0.29523128967977164	lower right
-diagonal	threshold	upper right	2.907820886384041	-2.2526689826128234	lower right
-diagonal	peak	lower right	1.4678234803495303	0.6360267201271019	lower right
-diagonal	cross-correlation	lower right	1.3699384603018672	0.5968727121080366	lower right
-diwl	threshold	upper left	0.0	0.0	lower right
-diwl	peak	upper left	0.0	0.0	lower right
-diwl	cross-correlation	center right	1.4110363377691215	0.5231783441662956	lower right
+algorithm	delay	prediction	x	y	label
+linear	threshold	lower left	-0.7398813029925025	0.7637812638282775	lower left
+linear	peak	center	0.3826687369346619	0.2525562456448873	lower left
+linear	cross-correlation	center left	0.3621124862035116	0.2713249963124593	lower left
+diagonal	threshold	upper left	-0.9157379359485989	-0.4943413342983089	lower left
+diagonal	peak	lower left	0.3393111627625231	0.6487925581583182	lower left
+diagonal	cross-correlation	lower left	0.31333084702487246	0.5768470684232856	lower left
+diwl	threshold	upper left	0.0	0.0	lower left
+diwl	peak	lower left	0.3098711708963384	0.6130948180163083	lower left
+diwl	cross-correlation	lower left	0.2996107777544573	0.5632161143754718	lower left

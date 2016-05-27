@@ -9,9 +9,11 @@ import ch.bildspur.sonic.tdao.DIWLAlgorithm;
 import ch.bildspur.sonic.tdao.DiagonalTDAO;
 import ch.bildspur.sonic.tdao.LinearTDAO;
 import ch.bildspur.sonic.util.geometry.Vector2;
+import ch.fhnw.ether.audio.ArrayAudioSource;
 import ch.fhnw.ether.audio.IAudioRenderTarget;
 import ch.fhnw.ether.audio.JavaSoundTarget;
 import ch.fhnw.ether.audio.URLAudioSource;
+import ch.fhnw.ether.media.IRenderTarget;
 import ch.fhnw.ether.media.IScheduler;
 import ch.fhnw.ether.media.RenderCommandException;
 import ch.fhnw.ether.media.RenderProgram;
@@ -71,8 +73,8 @@ public class AnalyzerController {
     ObservableList<String> lagDetectionAlgorithms;
     ObservableList<String> algorithms;
 
-    public static float SONIC_SPEED =  343.2f; //3960; //343.2f; // m/s
-    public static float SAMPLING_RATE = 44100; //96000; // hz
+    public static float SONIC_SPEED = 343.2f; //343.2f; // m/s
+    public static float SAMPLING_RATE = 96000; //96000; // hz
 
     OneChannelLTM oneLTM = new OneChannelLTM();
 
@@ -628,7 +630,7 @@ public class AnalyzerController {
         result.ifPresent(name -> {
             // save file to disk
             try {
-                try (FileWriter file = new FileWriter("results/" + name + ".json")) {
+                try (FileWriter file = new FileWriter("results/snap_96/" + name + ".json")) {
                     file.write(root.toJSONString());
                     System.out.println("saved " + name + ".json");
                 }
@@ -863,17 +865,15 @@ public class AnalyzerController {
         System.out.println("Experiment done!");
     }
 
-    public void onPlayClicked(ActionEvent actionEvent) {
-        float[] result = bufferLL.getBuffer();
-        byte[] barray = new byte[result.length];
-        for (int i = 0; i< result.length; i++) {
-            barray[i] = (byte)result[i];
-        }
-        // Create the AudioData object from the byte array
-        AudioData audioData = new AudioData(barray);
-        // Create an AudioDataStream to play back
-        AudioDataStream audioStream = new AudioDataStream(audioData);
-        // Play the sound
-        AudioPlayer.player.start(audioStream);
+    public void onPlayClicked(ActionEvent actionEvent) throws RenderCommandException {
+        float[] audioData = bufferLL.getNormalizedBuffer();
+
+        JavaSoundTarget target = new JavaSoundTarget();
+        ArrayAudioSource source = new ArrayAudioSource(audioData, 1, SAMPLING_RATE, 1);
+        /* Play the audio data */
+        target.useProgram(new RenderProgram<>(source));
+        target.start();
+        target.sleepUntil(IScheduler.NOT_RENDERING);
+        target.stop();
     }
 }

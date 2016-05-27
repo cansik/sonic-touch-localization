@@ -68,4 +68,25 @@ public class AudioUtils {
 
         return var19;
     }
+
+    public static float[] normalize(float[] data) {
+        float min = Float.MAX_VALUE;
+        float max = Float.MIN_VALUE;
+
+        // find min & max
+        for (float f : data) {
+            if (f < min)
+                min = f;
+            if (f > max)
+                max = f;
+        }
+
+        // update values
+        for (int i = 0; i < data.length; i++) {
+            float x = data[i];
+            data[i] = (x - min) / (max - min);
+        }
+
+        return data;
+    }
 }

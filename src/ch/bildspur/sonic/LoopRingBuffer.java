@@ -62,7 +62,8 @@ public class LoopRingBuffer {
 
     public float[] getNormalizedBuffer()
     {
-        return buffer.clone();
+        float[] data = buffer.clone();
+        return AudioUtils.normalize(data);
     }
 
     public int size()
