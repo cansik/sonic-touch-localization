@@ -111,7 +111,7 @@ public class Controller implements IGestureHandler {
         System.out.println(Arrays.toString(sources));
 
         // 8 channel
-        source = new JavaSoundSource(8, 96000, 256 * 8 * 10);
+        source = new JavaSoundSource(8, 44100, 256 * 8 * 10);
 
         // 2 channel
         //source = new JavaSoundSource(2, 96000, 256);

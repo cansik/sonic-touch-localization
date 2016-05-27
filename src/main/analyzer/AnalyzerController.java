@@ -48,6 +48,8 @@ import java.lang.reflect.Array;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -74,7 +76,7 @@ public class AnalyzerController {
     ObservableList<String> algorithms;
 
     public static float SONIC_SPEED = 343.2f; //343.2f; // m/s
-    public static float SAMPLING_RATE = 96000; //96000; // hz
+    public static float SAMPLING_RATE = 44100; //96000; // hz
 
     OneChannelLTM oneLTM = new OneChannelLTM();
 
@@ -543,50 +545,52 @@ public class AnalyzerController {
             return;
         }
 
+        loadJson(selectedFile);
+    }
+
+    public void loadJson(File jsonFile) {
         JSONObject root = null;
 
         // read file and load it into buffer
         try {
-            String content = new String(Files.readAllBytes(selectedFile.toPath()));
-            root = (JSONObject)new JSONParser().parse(content);
+            String content = new String(Files.readAllBytes(jsonFile.toPath()));
+            root = (JSONObject) new JSONParser().parse(content);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        System.out.println("Gain: " + (float)(double)root.get("gain"));
-        System.out.println("Threshold: " + (float)(double)root.get("threshold"));
+        System.out.println("Gain: " + (float) (double) root.get("gain"));
+        System.out.println("Threshold: " + (float) (double) root.get("threshold"));
 
         try {
             Main.inputController.setGain((float) (double) root.get("gain"));
             Main.inputController.getGestureRecognizer().setThreshold((float) (double) root.get("threshold"));
-        } catch (Exception ex)
-        {
+        } catch (Exception ex) {
             //ex.printStackTrace();
         }
 
         //read data into buffers
-        JSONObject data = (JSONObject)root.get("data");
-        JSONArray dataLL = (JSONArray)data.get("LL");
-        JSONArray dataLU = (JSONArray)data.get("LU");
-        JSONArray dataRU = (JSONArray)data.get("RU");
-        JSONArray dataRL = (JSONArray)data.get("RL");
+        JSONObject data = (JSONObject) root.get("data");
+        JSONArray dataLL = (JSONArray) data.get("LL");
+        JSONArray dataLU = (JSONArray) data.get("LU");
+        JSONArray dataRU = (JSONArray) data.get("RU");
+        JSONArray dataRL = (JSONArray) data.get("RL");
 
         bufferLL = new LoopRingBuffer(dataLL.size());
         bufferLU = new LoopRingBuffer(dataLU.size());
         bufferRU = new LoopRingBuffer(dataRU.size());
         bufferRL = new LoopRingBuffer(dataRL.size());
 
-        for(int i = 0; i < dataLL.size(); i++)
-        {
-            bufferLL.put((float)(double)dataLL.get(i));
-            bufferLU.put((float)(double)dataLU.get(i));
-            bufferRU.put((float)(double)dataRU.get(i));
-            bufferRL.put((float)(double)dataRL.get(i));
+        for (int i = 0; i < dataLL.size(); i++) {
+            bufferLL.put((float) (double) dataLL.get(i));
+            bufferLU.put((float) (double) dataLU.get(i));
+            bufferRU.put((float) (double) dataRU.get(i));
+            bufferRL.put((float) (double) dataRL.get(i));
         }
 
-        drawAllBuffer(selectedFile.getName());
+        drawAllBuffer(jsonFile.getName());
     }
 
     public void btnSaveJSON_Clicked(ActionEvent actionEvent) {
@@ -802,14 +806,16 @@ public class AnalyzerController {
             return;
         }
 
+        runExperiment(result.get());
+    }
+
+    public void runExperiment(String label) throws IOException, InterruptedException {
         StringBuilder sb = new StringBuilder();
         StringBuilder sbcsv = new StringBuilder();
         sb.append("New Experiment\n");
 
-        for(String algorithm : algorithms.filtered(x -> !x.equals("oneLTM")))
-        {
-            for(String lagAlgo : lagDetectionAlgorithms.filtered(x -> !x.equals("xcross")))
-            {
+        for (String algorithm : algorithms.filtered(x -> !x.equals("oneLTM"))) {
+            for (String lagAlgo : lagDetectionAlgorithms.filtered(x -> !x.equals("xcross"))) {
                 sb.append(algorithm + " | " + lagAlgo + "\n");
 
                 //Platform.runLater(() -> {
@@ -839,7 +845,7 @@ public class AnalyzerController {
                     sbcsv.append(lastPrediction + "\t");
                     sbcsv.append(lastPoint.x + "\t");
                     sbcsv.append(lastPoint.y + "\t");
-                    sbcsv.append(result.get() + "\n");
+                    sbcsv.append(label + "\n");
 
                     //Vector2d v = fixPoints.get(result.get());
                     //sbcsv.append(v.getX() + "\t");
@@ -875,5 +881,34 @@ public class AnalyzerController {
         target.start();
         target.sleepUntil(IScheduler.NOT_RENDERING);
         target.stop();
+    }
+
+    public void onAutoE_Clicked(ActionEvent actionEvent) throws IOException, InterruptedException {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(((Node) actionEvent.getTarget()).getScene().getWindow());
+
+        if (selectedDirectory == null) {
+            System.out.println("No directory selected!");
+            return;
+        }
+
+        String pattern = "\\d{1}([a-z_]+)\\d{1}";
+        Pattern r = Pattern.compile(pattern);
+
+        for (File file : selectedDirectory.listFiles()) {
+            file.getName().endsWith(".json");
+
+            // get label
+            Matcher m = r.matcher(file.getName());
+            m.find();
+
+            String label = m.group(1).replace("_", " ").trim();
+
+            // open json
+            loadJson(file);
+
+            // run experiment
+            runExperiment(label);
+        }
     }
 }
