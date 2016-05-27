@@ -73,9 +73,9 @@ public class DiagonalTDAO extends BaseTDAO {
         double distance = Math.abs(Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2)));
 
         double delta = delayAlgorithm.apply(f, g);
-        double fullTime = 1 / AnalyzerController.SONIC_SPEED * distance;
+        double fullTime = 1d / AnalyzerController.SONIC_SPEED * distance;
         double samplesForDistance = fullTime * AnalyzerController.SAMPLING_RATE;
-        double sampleWay = (samplesForDistance / 2) + delta;
+        double sampleWay = (samplesForDistance / 2d) + (delta / 2d);
 
         double percentagePosition = (sampleWay / samplesForDistance);
 

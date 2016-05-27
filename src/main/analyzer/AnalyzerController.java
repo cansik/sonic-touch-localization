@@ -42,10 +42,11 @@ import sun.audio.AudioDataStream;
 import sun.audio.AudioPlayer;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.lang.reflect.Array;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by cansik on 10/05/16.
@@ -82,10 +83,29 @@ public class AnalyzerController {
     public Vector2 lastPoint = Vector2.NULL;
     public String lastPrediction = "none";
 
+    Map<String, Vector2d> fixPoints;
+
     public void initialize() {
         Main.analyzeController = this;
         clearLog();
         clearTable();
+
+        double width = visTable.getWidth();
+        double height = visTable.getHeight();
+
+        // get fixpoints
+        fixPoints = new HashMap<>();
+        fixPoints.put("center", new Vector2d(width / 2d, height / 2d));
+
+        fixPoints.put("lower left", new Vector2d(0, height));
+        fixPoints.put("upper left", new Vector2d(0, 0));
+        fixPoints.put("upper right", new Vector2d(width, 0));
+        fixPoints.put("lower right", new Vector2d(width, height));
+
+        fixPoints.put("center left", new Vector2d(0, height / 2d));
+        fixPoints.put("center top", new Vector2d(width / 2d, 0));
+        fixPoints.put("center right", new Vector2d(width, height / 2d));
+        fixPoints.put("center bottom", new Vector2d(width / 2d, height));
 
         algorithms = FXCollections.observableArrayList();
         lagDetectionAlgorithms = FXCollections.observableArrayList();
@@ -478,20 +498,6 @@ public class AnalyzerController {
 
         Vector2d prediction = new Vector2d(x, y);
 
-        // get fixpoints
-        Map<String, Vector2d> fixPoints = new HashMap<>();
-        fixPoints.put("center", new Vector2d(width / 2d, height / 2d));
-
-        fixPoints.put("lower left", new Vector2d(0, height));
-        fixPoints.put("upper left", new Vector2d(0, 0));
-        fixPoints.put("upper right", new Vector2d(width, 0));
-        fixPoints.put("lower right", new Vector2d(width, height));
-
-        fixPoints.put("center left", new Vector2d(0, height / 2d));
-        fixPoints.put("center top", new Vector2d(width / 2d, 0));
-        fixPoints.put("center right", new Vector2d(width, height / 2d));
-        fixPoints.put("center bottom", new Vector2d(width / 2d, height));
-
         // anaylze
         double minDistance = Double.MAX_VALUE;
         String minKey = "None";
@@ -782,7 +788,20 @@ public class AnalyzerController {
     }
 
     public void onRunExperimentTest(ActionEvent actionEvent) throws InterruptedException, IOException {
+        List<String> choices = fixPoints.keySet().stream().collect(Collectors.toList());
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("center", choices);
+        dialog.setTitle("Choose Direction");
+        dialog.setHeaderText("Direction where the signal was coming from.");
+        dialog.setContentText("Choose your direction:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (!result.isPresent()) {
+            return;
+        }
+
         StringBuilder sb = new StringBuilder();
+        StringBuilder sbcsv = new StringBuilder();
         sb.append("New Experiment\n");
 
         for(String algorithm : algorithms.filtered(x -> !x.equals("oneLTM")))
@@ -811,6 +830,18 @@ public class AnalyzerController {
                     sb.append(lastPrediction + "\t");
                     sb.append(lastPoint.x + "\t");
                     sb.append(lastPoint.y + "\n");
+
+                    // collect result for csv
+                    sbcsv.append(algorithm + "\t");
+                    sbcsv.append(lagAlgo + "\t");
+                    sbcsv.append(lastPrediction + "\t");
+                    sbcsv.append(lastPoint.x + "\t");
+                    sbcsv.append(lastPoint.y + "\t");
+                    sbcsv.append(result.get() + "\n");
+
+                    //Vector2d v = fixPoints.get(result.get());
+                    //sbcsv.append(v.getX() + "\t");
+                    //sbcsv.append(v.getY() + "\n");
                 });
                 t.start();
                 t.join();
@@ -821,6 +852,14 @@ public class AnalyzerController {
 
         // save sb
         Files.write(Paths.get("experiment/test.txt"), sb.toString().getBytes());
+
+        // create or append
+        Path p = Paths.get("experiment/result.csv");
+
+        if (!Files.exists(p))
+            Files.write(p, "algorithm\tdelay\tprediction\tx\ty\tlabel\n".getBytes(), StandardOpenOption.CREATE);
+        Files.write(Paths.get("experiment/result.csv"), sbcsv.toString().getBytes(), StandardOpenOption.APPEND);
+
         System.out.println("Experiment done!");
     }
 

@@ -100,9 +100,9 @@ public class LinearTDAO extends BaseTDAO {
 
     double getPercentagePosition(float sonicSpeed, float samplingRate, float tableLength, float[] f, float[] g, Function2<float[], float[], Float> algorithm) {
         double delta = algorithm.apply(f, g);
-        double fullTime = 1 / sonicSpeed * tableLength;
+        double fullTime = 1d / sonicSpeed * tableLength;
         double samplesForDistance = fullTime * samplingRate;
-        double sampleWay = (samplesForDistance / 2) + delta;
+        double sampleWay = (samplesForDistance / 2d) + (delta / 2d);
 
         System.out.print("Table length (m): " + tableLength);
         System.out.print("\tDelta (smp): " + delta);
