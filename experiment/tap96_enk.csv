@@ -1,0 +1,55 @@
+algorithm	delay	prediction	x	y	label
+linear	threshold	center	0.628125	0.253125	lower left
+linear	peak	upper left	-6.196875	-5.556249999999999	lower left
+linear	cross-correlation	lower right	10.875781250000001	10.582031250000004	lower left
+diagonal	threshold	center bottom	0.6137396076211066	0.6475207847577868	lower left
+diagonal	peak	lower left	-7.0168423655969265	13.637678191545623	lower left
+diagonal	cross-correlation	lower right	12.082322632844654	12.45675479092852	lower left
+diwl	threshold	upper left	0.0	0.0	lower left
+diwl	peak	upper left	0.0	0.0	lower left
+diwl	cross-correlation	upper left	0.0	0.0	lower left
+linear	threshold	upper left	-5.242187500000001	-1.4125000000000005	lower left
+linear	peak	upper left	-15.591406250000002	-36.13671875	lower left
+linear	cross-correlation	center top	0.7499999999999991	-15.357031250000002	lower left
+diagonal	threshold	lower left	-5.949469291962268	4.37197150978086	lower left
+diagonal	peak	lower left	-17.52024761146997	82.01768510035367	lower left
+diagonal	cross-correlation	lower left	-10.70722799252529	58.26295669563323	lower left
+diwl	threshold	upper left	0.0	0.0	lower left
+diwl	peak	upper left	0.0	0.0	lower left
+diwl	cross-correlation	upper left	0.0	0.0	lower left
+linear	threshold	lower left	-18.557031250000005	12.775781250000001	lower left
+linear	peak	upper left	-15.977343750000003	-35.95390625	lower left
+linear	cross-correlation	center top	0.8312499999999989	-15.367187500000002	lower left
+diagonal	threshold	upper left	-20.835917159356402	-27.353989849104742	lower left
+diagonal	peak	lower left	-17.95173885400314	81.608903923217	lower left
+diagonal	cross-correlation	lower left	-10.673162894430567	58.37650702261564	lower left
+diwl	threshold	upper left	0.0	0.0	lower left
+diwl	peak	upper left	0.0	0.0	lower left
+diwl	cross-correlation	upper left	0.0	0.0	lower left
+linear	threshold	lower left	-5.394531250000001	2.98515625	upper left
+linear	peak	lower right	1.3796875000000002	20.1390625	upper left
+linear	cross-correlation	center bottom	0.9429687499999995	16.147656250000004	upper left
+diagonal	threshold	upper left	-6.119794782435884	-5.461486806895913	upper left
+diagonal	peak	upper right	1.4540120272909505	-43.81878726155444	upper left
+diagonal	cross-correlation	center top	0.7954201307929676	-35.00728188771934	upper left
+diwl	threshold	upper left	0.0	0.0	upper left
+diwl	peak	upper left	0.0	0.0	upper left
+diwl	cross-correlation	upper left	0.0	0.0	upper left
+linear	threshold	lower left	-13.95625	11.567187500000001	upper left
+linear	peak	lower right	1.4203124999999996	20.118750000000006	upper left
+linear	cross-correlation	center bottom	0.9835937500000007	36.358593750000004	upper left
+diagonal	threshold	upper left	-15.692087347053159	-24.6514920669234	upper left
+diagonal	peak	upper right	1.4994321580839127	-43.77336713076147	upper left
+diagonal	cross-correlation	upper left	-21.846515069499823	-80.51825294226974	upper left
+diwl	threshold	upper left	0.0	0.0	upper left
+diwl	peak	upper left	0.0	0.0	upper left
+diwl	cross-correlation	upper left	0.0	0.0	upper left
+linear	threshold	center	0.75	0.375	upper left
+linear	peak	upper right	12.409375000000004	-11.974999999999994	upper left
+linear	cross-correlation	lower left	-9.416406250000001	10.104687500000004	upper left
+diagonal	threshold	center	0.75	0.375	upper left
+diagonal	peak	lower right	13.785577537580807	27.9904395221224	upper left
+diagonal	cross-correlation	upper left	-28.614114557651533	-22.47132578886113	upper left
+diwl	threshold	center	0.75	0.3673153238339657	upper left
+diwl	peak	upper left	0.0	0.0	upper left
+diwl	cross-correlation	upper left	0.0	0.0	upper left
