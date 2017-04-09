@@ -1,4 +1,4 @@
-# Surface Touch Localization
+# Sonic Touch Localization
 Touch localization on a tabletop with the use of multiple microphones.
 
 ## Idea
